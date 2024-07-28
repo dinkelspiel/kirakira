@@ -26,7 +26,7 @@ fn get_connection() {
   let assert Ok(connection) =
     gmysql.connect(gmysql.Config(
       host: env.db_host,
-      port: 3306,
+      port: 3307,
       user: Some("root"),
       password: Some("kirakira"),
       connection_mode: gmysql.Asynchronous,
