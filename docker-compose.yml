@@ -24,8 +24,8 @@ services:
       - PMA_PASSWORD=kirakira
   frontend-dev:
     build:
-      context: ./frontend
-      dockerfile: ./Dockerfile
+      context: .
+      dockerfile: ./frontend/Dockerfile
     ports:
       - '1234:1234'
     volumes:
@@ -34,14 +34,16 @@ services:
         target: /app
   frontend-prod:
     build:
-      context: ./frontend
-      dockerfile: ./Dockerfile
+      context: .
+      dockerfile: ./frontend/Dockerfile
     ports:
       - '1234:1234'
   backend: 
+    environment:
+      - DB_HOST=mysql
     build:
-      context: ./backend
-      dockerfile: ./Dockerfile
+      context: .
+      dockerfile: ./backend/Dockerfile
     ports:
       - '8000:8000'
 volumes:

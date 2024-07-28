@@ -1,15 +1,31 @@
 import cake
 import cake/dialect/mysql_dialect
+import decode
 import gleam/dynamic.{type Dynamic}
-import gleam/erlang/process
-import gleam/int
 import gleam/option.{Some}
+import glenv
 import gmysql
 
+pub type Env {
+  Env(db_host: String)
+}
+
 fn get_connection() {
+  let definitions = [#("DB_HOST", glenv.String)]
+
+  let decoder =
+    decode.into({
+      use db_host <- decode.parameter
+
+      Env(db_host)
+    })
+    |> decode.field("DB_HOST", decode.string)
+
+  let assert Ok(env) = glenv.load(decoder, definitions)
+
   let assert Ok(connection) =
     gmysql.connect(gmysql.Config(
-      host: "0.0.0.0",
+      host: env.db_host,
       port: 3306,
       user: Some("root"),
       password: Some("kirakira"),
