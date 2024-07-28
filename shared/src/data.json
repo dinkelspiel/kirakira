@@ -1,0 +1,47 @@
+{
+  "id": 10,
+  "title": "a",
+  "body": "b",
+  "username": "keiidev",
+  "original_creator": false,
+  "likes": 0,
+  "comments_count": 4,
+  "tags": [],
+  "created_at": 1722036438,
+  "comments": [
+    {
+      "id": 1,
+      "body": "Test",
+      "username": "goodthoup",
+      "likes": 0,
+      "comments": [
+        {
+          "id": 2,
+          "body": "Testa",
+          "username": "goodthoup",
+          "likes": 0,
+          "comments": [
+            {
+              "id": 4,
+              "body": "Testc",
+              "username": "keiidev",
+              "likes": 0,
+              "comments": [],
+              "created_at": 1722100292
+            }
+          ],
+          "created_at": 1722100292
+        },
+        {
+          "id": 3,
+          "body": "Testb",
+          "username": "goodthoup",
+          "likes": 0,
+          "comments": [],
+          "created_at": 1722100292
+        }
+      ],
+      "created_at": 1722100292
+    }
+  ]
+}

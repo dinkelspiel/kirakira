@@ -1,0 +1,108 @@
+import decode
+import gleam/json
+import gleam/option.{type Option}
+import simplifile
+
+pub type Post {
+  Post(
+    id: Int,
+    title: String,
+    href: Option(String),
+    body: Option(String),
+    likes: Int,
+    comments_count: Int,
+    comments: List(Comment),
+    tags: List(String),
+    username: String,
+    original_creator: Bool,
+    created_at: Int,
+  )
+}
+
+pub type Comment {
+  Comment(
+    id: Int,
+    body: String,
+    username: String,
+    likes: Int,
+    comments: List(Comment),
+    created_at: Int,
+  )
+}
+
+import gleam/io
+
+pub fn main() {
+  let assert Ok(data) = simplifile.read("./src/data.json")
+  io.debug(
+    json.decode(from: data, using: fn(data) {
+      let a = decode.from(post_decoder(), data)
+      io.debug("finish")
+      a
+    }),
+  )
+}
+
+pub fn post_decoder() {
+  decode.into({
+    use id <- decode.parameter
+    use title <- decode.parameter
+    use href <- decode.parameter
+    use body <- decode.parameter
+    use likes <- decode.parameter
+    use comments_count <- decode.parameter
+    use comments <- decode.parameter
+    use tags <- decode.parameter
+    use username <- decode.parameter
+    use original_creator <- decode.parameter
+    use created_at <- decode.parameter
+
+    Post(
+      id,
+      title,
+      href,
+      body,
+      likes,
+      comments_count,
+      comments,
+      tags,
+      username,
+      original_creator,
+      created_at,
+    )
+  })
+  |> decode.field("id", decode.int)
+  |> decode.field("title", decode.string)
+  |> decode.field("href", decode.optional(decode.string))
+  |> decode.field("body", decode.optional(decode.string))
+  |> decode.field("likes", decode.int)
+  |> decode.field("comments_count", decode.int)
+  |> decode.field("comments", decode.list(comment_decoder()))
+  |> decode.field("tags", decode.list(decode.string))
+  |> decode.field("username", decode.string)
+  |> decode.field("original_creator", decode.bool)
+  |> decode.field("created_at", decode.int)
+}
+
+fn decode_lazy(decoder) {
+  decode.dynamic |> decode.then(fn(_) { decoder() })
+}
+
+fn comment_decoder() {
+  decode.into({
+    use id <- decode.parameter
+    use body <- decode.parameter
+    use username <- decode.parameter
+    use likes <- decode.parameter
+    use comments <- decode.parameter
+    use created_at <- decode.parameter
+
+    Comment(id, body, username, likes, comments, created_at)
+  })
+  |> decode.field("id", decode.int)
+  |> decode.field("body", decode.string)
+  |> decode.field("username", decode.string)
+  |> decode.field("likes", decode.int)
+  |> decode.field("comments", decode.list(decode_lazy(comment_decoder)))
+  |> decode.field("created_at", decode.int)
+}
