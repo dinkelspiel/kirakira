@@ -1,27 +1,4 @@
 services:
-  mysql:
-    image: mysql
-    restart: always
-    ports:
-      - 3307:3306
-    environment:
-      MYSQL_ROOT_PASSWORD: kirakira
-      MYSQL_PASSWORD: kirakira
-      MYSQL_USER: kirakira
-      MYSQL_DATABASE: kirakira
-    volumes:
-      - mysql:/var/lib/mysql
-  phpmyadmin:
-    image: phpmyadmin
-    restart: always
-    ports:
-      - 8080:80
-    environment:
-      - PMA_ARBITRARY=1
-      - PMA_PORT=3306
-      - PMA_HOST=mysql
-      - PMA_USER=root
-      - PMA_PASSWORD=kirakira
   frontend:
     build:
       context: .
