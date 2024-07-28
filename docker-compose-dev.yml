@@ -29,8 +29,6 @@ services:
     ports:
       - '1234:1234'
   backend: 
-    environment:
-      - DB_HOST=mysql
     build:
       context: .
       dockerfile: ./backend/Dockerfile
