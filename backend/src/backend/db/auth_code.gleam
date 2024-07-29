@@ -1,25 +1,12 @@
 import backend/db
-import backend/response
-import backend/web
-import cake
-import cake/dialect/mysql_dialect
 import cake/insert as i
-import cake/join as j
-import cake/param
 import cake/select as s
 import cake/update as u
 import cake/where as w
-import gleam/bit_array
 import gleam/dynamic
-import gleam/http.{Get, Post}
-import gleam/int
-import gleam/json
 import gleam/list
-import gleam/option.{Some}
 import gleam/result
-import gleam/string_builder
 import gmysql
-import wisp.{type Request, type Response}
 
 pub type AuthCode {
   AuthCode(id: Int, token: String, user_id: Int, used: Bool)
