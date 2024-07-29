@@ -1,9 +1,5 @@
 localhost:3000
 
-{
-    auto_https off
-}
-
 /index.html {
     root * /srv
     file_server
