@@ -14,6 +14,7 @@ import backend/web
 import cors_builder as cors
 import gleam/http
 import gleam/int
+import gleam/list
 import wisp.{type Request, type Response}
 
 fn cors() {
@@ -28,7 +29,13 @@ pub fn handle_request(req: Request) -> Response {
   use req <- web.middleware(req)
   use req <- cors.wisp_middleware(req, cors())
 
-  case wisp.path_segments(req) {
+  // Remove the api prefix from the path as it only exists in unproxied dev
+  let sanitized_path: List(String) = case wisp.path_segments(req) {
+    ["api", ..] -> wisp.path_segments(req) |> list.drop(1)
+    _ -> wisp.path_segments(req)
+  }
+
+  case sanitized_path {
     ["posts"] -> posts.posts(req)
     ["posts", post_id] ->
       case int.parse(post_id) {
