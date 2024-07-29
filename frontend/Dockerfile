@@ -7,8 +7,8 @@ RUN apk add \
 COPY ./frontend /app
 COPY ./shared /shared
 WORKDIR /app
+RUN gleam clean
 RUN gleam run -m lustre/dev build app
-COPY Caddyfile /etc/caddy/Caddyfile
-RUN mkidr /srv
-COPY /app/index.html /srv/index.html
-COPY /app/priv /srv/priv
+RUN cp /app/Caddyfile /etc/caddy/Caddyfile
+RUN cp /app/index.html /srv/index.html
+RUN cp /app/priv /srv/priv -r
