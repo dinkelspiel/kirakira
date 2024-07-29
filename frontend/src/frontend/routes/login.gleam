@@ -1,3 +1,4 @@
+import env
 import frontend/components/button.{button_class}
 import frontend/components/input.{input_class}
 import frontend/state.{
@@ -14,7 +15,7 @@ import lustre_http
 
 pub fn login(model: Model) {
   lustre_http.post(
-    "http://localhost:1234/api/auth/login",
+    env.get_api_url() <> "/api/auth/login",
     json.object([
       #("email_username", json.string(model.login_email_username)),
       #("password", json.string(model.login_password)),

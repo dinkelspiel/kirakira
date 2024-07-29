@@ -1,4 +1,5 @@
 import decode
+import env
 import frontend/components/button.{button_class}
 import frontend/components/like.{like_comment, like_post}
 import frontend/routes/create_post.{create_post_view}
@@ -171,7 +172,7 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
                 sign_up_password: "",
                 sign_up_error: None,
               ),
-              case uri.parse("http://localhost:1234/") {
+              case uri.parse(env.get_api_url()) {
                 Ok(uri) ->
                   effect.from(fn(dispatch) {
                     on_url_change(uri)
@@ -218,7 +219,7 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
                 login_error: None,
               ),
               effect.batch([
-                case uri.parse("http://localhost:1234/") {
+                case uri.parse(env.get_api_url()) {
                   Ok(uri) ->
                     effect.from(fn(dispatch) {
                       on_url_change(uri)
@@ -242,7 +243,7 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     LogoutResponded(_) -> #(
       model,
       effect.batch([
-        case uri.parse("http://localhost:1234/") {
+        case uri.parse(env.get_api_url()) {
           Ok(uri) ->
             effect.from(fn(dispatch) {
               on_url_change(uri)
@@ -307,7 +308,7 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
                 create_post_tags: [],
                 create_post_error: None,
               ),
-              case uri.parse("http://localhost:1234/") {
+              case uri.parse(env.get_api_url()) {
                 Ok(uri) ->
                   effect.batch([
                     effect.from(fn(dispatch) {
@@ -439,7 +440,7 @@ fn get_route() -> Route {
 
 fn create_auth_code() {
   lustre_http.post(
-    "http://localhost:1234/api/auth-code",
+    env.get_api_url() <> "/api/auth-code",
     json.object([]),
     lustre_http.expect_json(message_error_decoder(), CreateAuthCodeResponded),
   )
@@ -470,7 +471,7 @@ fn get_post_id() -> String {
 }
 
 pub fn get_inviter(auth_code: String) -> Effect(Msg) {
-  let url = "http://localhost:1234/api/auth-code/" <> auth_code
+  let url = env.get_api_url() <> "/api/auth-code/" <> auth_code
   let decoder =
     dynamic.decode1(AuthCodeResponse, dynamic.field("username", dynamic.string))
 
@@ -478,7 +479,7 @@ pub fn get_inviter(auth_code: String) -> Effect(Msg) {
 }
 
 pub fn get_auth_user() -> Effect(Msg) {
-  let url = "http://localhost:1234/api/auth/validate"
+  let url = env.get_api_url() <> "/api/auth/validate"
 
   let decoder =
     dynamic.decode3(
@@ -492,7 +493,7 @@ pub fn get_auth_user() -> Effect(Msg) {
 }
 
 pub fn get_show_post() -> Effect(Msg) {
-  let url = "http://localhost:1234/api/posts/" <> get_post_id()
+  let url = env.get_api_url() <> "/api/posts/" <> get_post_id()
 
   lustre_http.get(
     url,
@@ -577,7 +578,7 @@ fn comment_decoder() {
 }
 
 pub fn get_posts() -> Effect(Msg) {
-  let url = "http://localhost:1234/api/posts"
+  let url = env.get_api_url() <> "/api/posts"
 
   let response_decoder =
     decode.into({
@@ -617,7 +618,7 @@ pub fn tag_decoder() {
 }
 
 pub fn get_tags() -> Effect(Msg) {
-  let url = "http://localhost:1234/api/tags"
+  let url = env.get_api_url() <> "/api/tags"
 
   let response_decoder =
     decode.into({
@@ -638,7 +639,7 @@ pub fn get_tags() -> Effect(Msg) {
 
 fn signup(model: Model) {
   lustre_http.post(
-    "http://localhost:1234/api/users",
+    env.get_api_url() <> "/api/users",
     json.object([
       #("username", json.string(model.sign_up_username)),
       #("email", json.string(model.sign_up_email)),
@@ -651,7 +652,7 @@ fn signup(model: Model) {
 
 fn logout(model _: Model) {
   lustre_http.post(
-    "http://localhost:1234/api/auth/logout",
+    env.get_api_url() <> "/api/auth/logout",
     json.object([]),
     lustre_http.expect_json(message_error_decoder(), LogoutResponded),
   )
@@ -659,7 +660,7 @@ fn logout(model _: Model) {
 
 fn create_post(model: Model) {
   lustre_http.post(
-    "http://localhost:1234/api/posts",
+    env.get_api_url() <> "/api/posts",
     json.object([
       #("title", json.string(model.create_post_title)),
       #("original_creator", json.bool(model.create_post_original_creator)),
@@ -680,7 +681,7 @@ fn create_comment(model: Model) {
   }
 
   lustre_http.post(
-    "http://localhost:1234/api/posts/" <> post_id <> "/comments",
+    env.get_api_url() <> "/api/posts/" <> post_id <> "/comments",
     json.object([
       #("body", json.string(model.create_comment_body)),
       #("parent_id", case model.create_comment_parent_id {

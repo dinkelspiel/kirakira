@@ -1,7 +1,7 @@
 import birl
 import frontend/components/like.{like_button_view}
 import frontend/components/tag.{tag_view}
-import frontend/state.{type Model, RequestLikePost}
+import frontend/state.{RequestLikePost}
 import gleam/int
 import gleam/list
 import gleam/option.{None, Some}
