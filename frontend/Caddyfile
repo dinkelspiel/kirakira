@@ -1,15 +1,13 @@
-localhost:3000
+localhost:3000 
 
-/index.html {
-    root * /srv
-    file_server
+encode gzip
+
+handle /api/* {
+  reverse_proxy kirakira-backend:8001
 }
 
-/priv/* {
-    root * /srv
-    file_server
-}
-
-/api/* {
-    reverse_proxy http://kirakira-backend:8001
+handle {
+  root * /srv
+  try_files {path} /index.html
+  file_server
 }
