@@ -1,9 +1,9 @@
-localhost:3000 
+http://localhost:3000 
 
 encode gzip
 
 handle /api/* {
-  reverse_proxy kirakira-backend:8001
+  reverse_proxy http://kirakira-backend:8001
 }
 
 handle {
