@@ -8,6 +8,7 @@ COPY ./frontend /app
 COPY ./shared /shared
 WORKDIR /app
 RUN gleam clean
+RUN sh env.sh https://kirakira.keii.dev
 RUN gleam run -m lustre/dev build app
 RUN cp /app/Caddyfile /etc/caddy/Caddyfile
 RUN cp /app/index.html /srv/index.html
