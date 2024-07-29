@@ -233,6 +233,7 @@ CREATE TABLE `tag` (
     'practices',
     'tools'
   ) NOT NULL,
+  `permission` ENUM('member', 'admin') NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
@@ -264,3 +265,173 @@ CREATE TABLE `post_tag` (
 
 /*!40101 SET character_set_client = @saved_cs_client */
 ;
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('culture', 'culture', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('culture', 'law', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('culture', 'person', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('culture', 'philosophy', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('format', 'ask', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('format', 'audio', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('format', 'book', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('format', 'pdf', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('format', 'show', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('format', 'slides', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('format', 'video', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('genre', 'art', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('genre', 'event', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('genre', 'job', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('genre', 'rant', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('genre', 'release', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('genre', 'satire', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('kirakira', 'announce', 'admin');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('kirakira', 'meta', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('platforms', 'erlang', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('platforms', 'javascript', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('practices', 'api', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('practices', 'debugging', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('practices', 'devops', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('practices', 'performance', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('practices', 'practices', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('practices', 'privacy', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('practices', 'scaling', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('practices', 'security', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('practices', 'testing', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('practices', 'virtualization', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('tools', 'compilers', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('tools', 'editors', 'member');
+
+INSERT INTO
+  `tag` (category, name, permission)
+VALUES
+  ('tools', 'cli', 'member');
