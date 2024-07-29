@@ -30,7 +30,7 @@ Install [gleam](https://gleam.run/getting-started/install.html) and
 
 ```sh
 cd frontend
-gleam run -m lustre/dev start
+gleam run -m lustre/dev start --proxy-from=/api --proxy-to=http://localhost:8001/api
 cd ../backend
 DB_HOST=localhost DB_PASSWORD=kirakira DB_USER=root DB_NAME=kirakira DB_PORT=3306 gleam run
 ```
