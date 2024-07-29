@@ -1,29 +1,14 @@
 import backend/db
-import backend/db/auth_code.{get_auth_code}
-import backend/db/user
 import backend/generatetoken.{generate_token}
-import backend/response
-import backend/web
-import cake
-import cake/dialect/mysql_dialect
 import cake/insert as i
-import cake/join as j
-import cake/param
 import cake/select as s
 import cake/where as w
-import gleam/bit_array
-import gleam/bool
 import gleam/dynamic
-import gleam/http.{Get, Post}
-import gleam/int
 import gleam/io
-import gleam/json
 import gleam/list
-import gleam/option.{Some}
 import gleam/result
-import gleam/string_builder
 import gmysql
-import wisp.{type Request, type Response}
+import wisp.{type Request}
 
 pub fn get_user_id_from_session(req: Request) {
   use session_token <- result.try(

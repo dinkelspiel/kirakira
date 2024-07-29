@@ -7,14 +7,14 @@ import cake/select.{type Select}
 import cake/select as s
 import cake/where as w
 import decode
-import gleam/dynamic.{type Dynamic}
+import gleam/dynamic
 import gleam/int
 import gleam/json.{type Json}
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
 import gmysql
-import shared.{type Post, type PostComment, Post, PostComment}
+import shared.{type Post, Post}
 import wisp.{type Request}
 
 pub type ListPostsDBRow {

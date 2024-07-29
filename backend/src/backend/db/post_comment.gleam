@@ -1,22 +1,17 @@
 import backend/db.{list_to_tuple}
 import backend/db/user_like
-import cake
-import cake/dialect/mysql_dialect
 import cake/fragment as f
 import cake/join as j
-import cake/select.{type Select}
 import cake/select as s
 import cake/where as w
 import decode
 import gleam/dynamic.{type Dynamic}
-import gleam/int
-import gleam/io
 import gleam/json.{type Json}
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
 import gmysql
-import shared.{type Post, type PostComment, Post, PostComment}
+import shared.{type PostComment, PostComment}
 import wisp.{type Request}
 
 pub type PostCommentDBRow {

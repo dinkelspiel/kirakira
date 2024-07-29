@@ -1,24 +1,11 @@
 import backend/db.{list_to_tuple}
-import backend/response
-import backend/web
-import cake
-import cake/dialect/mysql_dialect
-import cake/join as j
-import cake/param
 import cake/select as s
 import cake/where as w
 import decode
-import gleam/bit_array
-import gleam/dynamic
-import gleam/http.{Get, Post}
-import gleam/int
-import gleam/json
 import gleam/list
-import gleam/option.{type Option, Some}
+import gleam/option.{type Option}
 import gleam/result
-import gleam/string_builder
 import gmysql
-import wisp.{type Request, type Response}
 
 pub type User {
   User(

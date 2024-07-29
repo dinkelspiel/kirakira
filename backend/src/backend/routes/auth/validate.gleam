@@ -1,28 +1,9 @@
-import backend/db
-import backend/db/auth_code.{type AuthCode, get_auth_code}
-import backend/db/user.{get_user_by_id}
+import backend/db/user
 import backend/db/user_session
-import backend/generatetoken.{generate_token}
 import backend/response
-import beecrypt
-import cake
-import cake/dialect/mysql_dialect
-import cake/insert as i
-import cake/join as j
-import cake/param
-import cake/select as s
-import cake/update as u
-import cake/where as w
-import gleam/bool
-import gleam/dynamic
-import gleam/http.{Get, Post}
-import gleam/io
+import gleam/http.{Get}
 import gleam/json
-import gleam/list
 import gleam/result
-import gleam/string
-import gleam/string_builder
-import gmysql
 import wisp.{type Request, type Response}
 
 pub fn validate(req: Request) -> Response {
