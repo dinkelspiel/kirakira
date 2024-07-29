@@ -1,0 +1,17 @@
+{
+    auto_https off
+}
+
+/index.html {
+    root * /srv
+    file_server
+}
+
+/priv/* {
+    root * /srv
+    file_server
+}
+
+/api/* {
+    reverse_proxy http://kirakira-backend:8001
+}
