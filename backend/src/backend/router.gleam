@@ -20,12 +20,9 @@ import wisp.{type Request, type Response}
 fn cors() {
   cors.new()
   |> cors.allow_origin("http://localhost:1234")
-  |> cors.allow_origin("http://localhost:8001")
   |> cors.allow_method(http.Get)
   |> cors.allow_method(http.Post)
-  |> cors.allow_method(http.Options)
   |> cors.allow_header("content-type")
-  |> cors.allow_credentials
 }
 
 pub fn handle_request(req: Request) -> Response {
