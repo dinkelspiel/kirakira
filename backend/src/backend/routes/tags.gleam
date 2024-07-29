@@ -7,12 +7,12 @@ import wisp.{type Request, type Response}
 
 pub fn tags(req: Request) -> Response {
   case req.method {
-    Get -> list_tags(req)
+    Get -> list_tags()
     _ -> wisp.method_not_allowed([Get])
   }
 }
 
-pub fn list_tags(req: Request) -> Response {
+pub fn list_tags() -> Response {
   let result = {
     use tags <- result.try(
       tag.get_tags()

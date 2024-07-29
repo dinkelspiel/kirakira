@@ -1,4 +1,3 @@
-import backend/db/post
 import backend/db/user_like
 import backend/db/user_session
 import backend/response
@@ -17,9 +16,6 @@ pub fn post_likes(req: Request, post_id: Int) -> Response {
 pub fn like_post(req: Request, post_id: Int) -> Response {
   let result = {
     use user_id <- result.try(user_session.get_user_id_from_session(req))
-
-    // TMP TODO
-    use post <- result.try(post.get_post_by_id(req, post_id))
 
     user_like.toggle_like(user_id, post_id, user_like.Post)
 
