@@ -1,28 +1,12 @@
-import backend/db
-import backend/db/auth_code.{type AuthCode, get_auth_code}
 import backend/db/user.{get_user_by_email, get_user_by_username}
 import backend/db/user_session.{create_user_session}
-import backend/generatetoken.{generate_token}
 import beecrypt
-import cake
-import cake/dialect/mysql_dialect
-import cake/insert as i
-import cake/join as j
-import cake/param
-import cake/select as s
-import cake/update as u
-import cake/where as w
 import gleam/bool
 import gleam/dynamic
-import gleam/http.{Get, Post}
-import gleam/io
+import gleam/http.{Post}
 import gleam/json
-import gleam/list
-import gleam/regex
 import gleam/result
 import gleam/string
-import gleam/string_builder
-import gmysql
 import wisp.{type Request, type Response}
 
 pub fn login(req: Request) -> Response {

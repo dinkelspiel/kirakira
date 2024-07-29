@@ -1,26 +1,16 @@
 import backend/db.{list_to_tuple}
-import backend/db/post_comment
-import backend/db/user_like
-import cake/delete
-import cake/fragment as f
-import cake/insert as i
-import cake/join as j
 import cake/select.{type Select}
 import cake/select as s
 import cake/where as w
 import decode
-import gleam/dynamic.{type Dynamic}
-import gleam/int
 import gleam/json.{type Json}
 import gleam/list
-import gleam/option.{type Option, None, Some}
 import gleam/result
 import gmysql
 import shared.{
   type Tag, Tag, string_to_tag_category, string_to_tag_permission,
   tag_category_to_string, tag_permission_to_string,
 }
-import wisp.{type Request}
 
 pub type TagDbRow {
   TagDbRow(tag_id: Int, tag_name: String, tag_category: String)

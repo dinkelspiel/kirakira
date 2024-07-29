@@ -1,4 +1,3 @@
-import backend/db
 import backend/response
 import backend/routes/auth/login
 import backend/routes/auth/logout
@@ -12,24 +11,9 @@ import backend/routes/posts/likes as post_likes
 import backend/routes/tags
 import backend/routes/users
 import backend/web
-import beecrypt
-import cake
-import cake/dialect/mysql_dialect
-import cake/join as j
-import cake/param
-import cake/select as s
-import cake/where as w
 import cors_builder as cors
-import gleam/bit_array
-import gleam/dynamic
-import gleam/http.{Get, Post}
+import gleam/http
 import gleam/int
-import gleam/json
-import gleam/list
-import gleam/option.{Some}
-import gleam/result
-import gleam/string_builder
-import gmysql
 import wisp.{type Request, type Response}
 
 fn cors() {
