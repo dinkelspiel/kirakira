@@ -34,7 +34,7 @@ import lustre
 import lustre/attribute.{class, href, src}
 import lustre/effect.{type Effect}
 import lustre/element.{type Element, text}
-import lustre/element/html.{a, div, img, nav}
+import lustre/element/html.{a, body, div, img, nav}
 import lustre_http
 import modem
 import shared.{type Post, type PostComment, type Tag, Post, PostComment, Tag}
@@ -694,63 +694,67 @@ fn create_comment(model: Model) {
 }
 
 fn view(model: Model) -> Element(Msg) {
-  div(
+  body(
     [
       class(
-        "bg-[#fefefc] text-[#151515] w-[100vw] min-h-[100vh] h-[100vh] px-4",
+        "bg-[#fefefc] text-[#151515] w-[100vw] min-h-[100vh] h-[100vh] px-4 max-w-[800px] py-4 mx-auto flex flex-col gap-4",
       ),
     ],
     [
-      div([class("max-w-[800px] py-4 mx-auto flex flex-col gap-4")], [
-        nav(
-          [
-            class(
-              "text-sm font-bold text-neutral-700 h-[28px] flex justify-between items-center",
-            ),
-          ],
-          [
-            div([class("flex gap-2 items-center")], [
-              img([
-                src("https://gleam.run/images/lucy/lucy.svg"),
-                class("size-[18px]"),
-              ]),
-              a([href("/"), class("hover:underline")], [text("Latest")]),
+      nav(
+        [
+          class(
+            "text-sm font-bold text-neutral-700 h-[28px] flex justify-between items-center",
+          ),
+        ],
+        [
+          div([class("flex gap-2 items-center")], [
+            img([
+              src("https://gleam.run/images/lucy/lucy.svg"),
+              attribute.alt("Lucy"),
+              class("size-[18px]"),
             ]),
-            case model.auth_user {
-              None ->
-                div([], [
-                  a([href("/auth/login"), class("hover:underline")], [
-                    text("Login"),
-                  ]),
-                ])
-              Some(auth_user) ->
-                div([class("flex gap-2 items-center")], [
-                  a(
-                    [class("font-normal"), button_class(), href("/create-post")],
-                    [text("Post")],
-                  ),
-                  a(
-                    [
-                      class("hover:underline"),
-                      href("/user/" <> auth_user.username),
-                    ],
-                    [text(auth_user.username)],
-                  ),
-                ])
-            },
-          ],
-        ),
-        case model.route, model.auth_user {
-          Active, _ -> latest_view(model)
-          Login, _ -> login_view(model)
-          Signup(auth_code), _ -> signup_view(model, auth_code)
-          CreatePost, Some(_) -> create_post_view(model)
-          ShowPost(_), _ -> show_post_view(model)
-          UserPage(_), _ -> user_view(model)
-          NotFound, _ -> text("404 Not found")
-          _, _ -> text("404 Not found")
-        },
-      ]),
+            a([href("/"), class("hover:underline")], [text("Latest")]),
+          ]),
+          case model.auth_user {
+            None ->
+              div([], [
+                a([href("/auth/login"), class("hover:underline")], [
+                  text("Login"),
+                ]),
+              ])
+            Some(auth_user) ->
+              div([class("flex gap-2 items-center")], [
+                a(
+                  [
+                    class("font-normal"),
+                    button_class(),
+                    class("hover:bg-[#584355]/80"),
+                    href("/create-post"),
+                  ],
+                  [text("Post")],
+                ),
+                a(
+                  [
+                    class("hover:underline"),
+                    href("/user/" <> auth_user.username),
+                  ],
+                  [text(auth_user.username)],
+                ),
+              ])
+          },
+        ],
+      ),
+      case model.route, model.auth_user {
+        Active, _ -> latest_view(model)
+        Login, _ -> login_view(model)
+        Signup(auth_code), _ -> signup_view(model, auth_code)
+        CreatePost, Some(_) -> create_post_view(model)
+        ShowPost(_), _ -> show_post_view(model)
+        UserPage(_), _ -> user_view(model)
+        NotFound, _ -> text("404 Not found")
+        _, _ -> text("404 Not found")
+      },
     ],
   )
 }

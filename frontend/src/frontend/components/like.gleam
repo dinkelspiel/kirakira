@@ -16,6 +16,7 @@ pub fn like_button_view(user_likes: Bool, likes: Int, msg: Msg, classes: String)
       class("flex flex-col justify-center items-center"),
       class(classes),
       event.on_click(msg),
+      attribute.type_("button"),
     ],
     [
       div(

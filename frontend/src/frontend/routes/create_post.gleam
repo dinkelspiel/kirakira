@@ -10,43 +10,56 @@ import gleam/list
 import gleam/option.{None, Some}
 import lustre/attribute.{class, href}
 import lustre/element
-import lustre/element/html.{a, button, div, h1, input, li, text, textarea, ul}
+import lustre/element/html.{
+  a, button, div, form, h1, input, label, li, p, span, text, textarea, ul,
+}
 import lustre/event
 import shared
 
 pub fn create_post_view(model: Model) {
-  div(
-    [class("flex flex-col  mx-auto max-w-[450px] w-full gap-4")],
+  form(
+    [
+      class("flex flex-col mx-auto max-w-[600px] w-full gap-4"),
+      // this is to force the form to check button enabbled state instead
+      event.on("submit", fn(e) {
+        event.prevent_default(e)
+        Error([])
+      }),
+    ],
     list.append(
       [
         h1([class("text-[#584355] font-bold")], [text("Create Post")]),
         div(
           [class("grid sm:grid-cols-[170px,1fr] justify-start gap-2 w-full")],
           [
-            div([], [text("Title")]),
-            input([input_class(), event.on_input(CreatePostUpdateTitle)]),
-            div([], [text("Is this by you?")]),
+            label([], [text("Title")]),
+            input([
+              input_class(),
+              event.on_input(CreatePostUpdateTitle),
+              attribute.type_("text"),
+            ]),
+            label([], [text("Is this by you?")]),
             input([
               attribute.attribute("type", "checkbox"),
               event.on_check(CreatePostUpdateOriginalCreator),
-              class("me-auto"),
+              class("mx-auto accent-[#ffaff3]/50"),
             ]),
-            div([], [text("Replace link with body?")]),
+            label([], [text("Replace link with body?")]),
             input([
               attribute.attribute("type", "checkbox"),
               event.on_check(CreatePostUpdateUseBody),
-              class("me-auto"),
+              class("mx-auto accent-[#ffaff3]/50"),
             ]),
             case model.create_post_use_body {
               True ->
                 element.fragment([
-                  div([], [text("Body")]),
+                  label([], [text("Body")]),
                   textarea(
                     [input_class(), event.on_input(CreatePostUpdateBody)],
                     "",
                   ),
                   div([], []),
-                  div([class("text-xs leading-tight")], [
+                  p([class("text-xs leading-tight")], [
                     text(
                       "Kirakira is above all else a showcase or sharing forum. If you are going to ask for help with gleam refer to the ",
                     ),
@@ -61,8 +74,12 @@ pub fn create_post_view(model: Model) {
                 ])
               False ->
                 element.fragment([
-                  div([], [text("Link")]),
-                  input([input_class(), event.on_input(CreatePostUpdateHref)]),
+                  label([], [text("Link")]),
+                  input([
+                    input_class(),
+                    event.on_input(CreatePostUpdateHref),
+                    attribute.type_("url"),
+                  ]),
                 ])
             },
           ],
@@ -72,7 +89,7 @@ pub fn create_post_view(model: Model) {
           None -> element.none()
         },
         div(
-          [class("grid sm:grid-cols-2 gap-4 px-4")],
+          [class("grid sm:grid-cols-2 md:grid-cols-3 gap-4 px-4")],
           list.map(shared.tag_categories, fn(category) {
             div([], [
               html.h2([class("underline text-lg font-semibold")], [
@@ -92,9 +109,10 @@ pub fn create_post_view(model: Model) {
                   })
                   |> list.map(fn(tag) {
                     li([], [
-                      div([class("flex items-center gap-1 list")], [
+                      span([class("flex items-center gap-1 list")], [
                         input([
                           attribute.type_("checkbox"),
+                          class("accent-[#ffaff3]/50"),
                           attribute.checked(list.contains(
                             model.create_post_tags,
                             tag.id,
@@ -122,6 +140,7 @@ pub fn create_post_view(model: Model) {
             ),
             class("mx-auto"),
             event.on_click(RequestCreatePost),
+            attribute.type_("submit"),
           ],
           [text("Create Post")],
         ),
