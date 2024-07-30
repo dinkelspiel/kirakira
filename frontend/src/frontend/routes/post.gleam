@@ -49,7 +49,7 @@ fn create_comment_view(model: Model) {
     ),
     case model.create_comment_error {
       Some(err) ->
-        div([class("text-red-500 text-center")], [text("Error: " <> err)])
+        p([class("text-red-500 text-center")], [text("Error: " <> err)])
       None -> element.none()
     },
   ])

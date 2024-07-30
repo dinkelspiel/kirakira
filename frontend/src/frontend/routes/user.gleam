@@ -2,11 +2,11 @@ import frontend/components/button.{button_class}
 import frontend/state.{type Model, RequestCreateAuthCode, RequestLogout}
 import gleam/option.{None, Some}
 import lustre/attribute.{class}
-import lustre/element/html.{button, div, text}
+import lustre/element/html.{button, section, text}
 import lustre/event
 
 pub fn user_view(model: Model) {
-  div([class("flex gap-2")], [
+  section([class("flex gap-2"), attribute.id("user_settings")], [
     button(
       [button_class(), event.on_click(RequestLogout), attribute.type_("button")],
       [text("Logout")],
