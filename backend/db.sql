@@ -266,26 +266,22 @@ CREATE TABLE `post_tag` (
 /*!40101 SET character_set_client = @saved_cs_client */
 ;
 
-INSERT INTO
-  `tag` (category, name, permission)
-VALUES
-  ('culture', 'culture', 'member');
-
-INSERT INTO
-  `tag` (category, name, permission)
-VALUES
-  ('culture', 'law', 'member');
-
-INSERT INTO
-  `tag` (category, name, permission)
-VALUES
-  ('culture', 'person', 'member');
-
-INSERT INTO
-  `tag` (category, name, permission)
-VALUES
-  ('culture', 'philosophy', 'member');
-
+-- INSERT INTO
+--   `tag` (category, name, permission)
+-- VALUES
+--   ('culture', 'culture', 'member');
+-- INSERT INTO
+--   `tag` (category, name, permission)
+-- VALUES
+--   ('culture', 'law', 'member');
+-- INSERT INTO
+--   `tag` (category, name, permission)
+-- VALUES
+--   ('culture', 'person', 'member');
+-- INSERT INTO
+--   `tag` (category, name, permission)
+-- VALUES
+--   ('culture', 'philosophy', 'member');
 INSERT INTO
   `tag` (category, name, permission)
 VALUES

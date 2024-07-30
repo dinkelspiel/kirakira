@@ -1,4 +1,5 @@
 import gleam/option.{type Option}
+import gleam/io
 
 pub type Post {
   Post(
@@ -37,7 +38,10 @@ pub fn string_to_tag_category(category: String) {
     "platforms" -> Platforms
     "practices" -> Practices
     "tools" -> Tools
-    _ -> panic as "Invalid tag category"
+    _ -> {
+      io.debug(category)
+      panic as "Invalid tag category"
+    }
   }
 }
 

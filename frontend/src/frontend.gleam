@@ -76,14 +76,20 @@ fn init(_) -> #(Model, Effect(Msg)) {
       modem.init(on_url_change),
       get_auth_user(),
       get_posts(),
-      get_inviter(get_auth_code()),
-    ]),
+    ] |> list.append(case get_route() {
+      ShowPost(_) -> [get_show_post()]
+      Signup(_) -> [get_inviter(get_auth_code())]
+      _ -> []
+    })),
   )
 }
 
 fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   case msg {
-    OnRouteChange(route) -> #(Model(..model, route: route), case route {
+    OnRouteChange(route) -> #(Model(..model, route: route, show_post: case route {
+      ShowPost(_) -> None
+      _ -> model.show_post
+    }), case route {
       ShowPost(_) -> get_show_post()
       CreatePost ->
         case model.tags {
