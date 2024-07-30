@@ -94,10 +94,6 @@ pub fn create_post_view(model: Model) {
             },
           ],
         ),
-        case model.create_post_error {
-          Some(err) -> div([class("text-red-500")], [text("Error: " <> err)])
-          None -> element.none()
-        },
         div(
           [class("grid sm:grid-cols-2 md:grid-cols-3 gap-4 px-4")],
           list.map(shared.tag_categories, fn(category) {
@@ -154,6 +150,11 @@ pub fn create_post_view(model: Model) {
           ],
           [text("Create Post")],
         ),
+        case model.create_post_error {
+          Some(err) ->
+            div([class("text-red-500 text-center")], [text("Error: " <> err)])
+          None -> element.none()
+        },
       ],
     ),
   )

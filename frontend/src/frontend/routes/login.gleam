@@ -54,10 +54,11 @@ pub fn login_view(model: Model) {
         ],
         [text("Login")],
       ),
+      case model.login_error {
+        Some(err) ->
+          p([class("text-red-500 text-center")], [text("Error: " <> err)])
+        None -> element.none()
+      },
     ]),
-    case model.login_error {
-      Some(err) -> p([class("text-red-500")], [text("Error: " <> err)])
-      None -> element.none()
-    },
   ])
 }

@@ -51,10 +51,11 @@ pub fn signup_view(model: Model, auth_code _: String) {
         ],
         [text("Sign up")],
       ),
+      case model.sign_up_error {
+        Some(err) ->
+          p([class("text-red-500 text-center")], [text("Error: " <> err)])
+        None -> element.none()
+      },
     ]),
-    case model.sign_up_error {
-      Some(err) -> p([class("text-red-500")], [text("Error: " <> err)])
-      None -> element.none()
-    },
   ])
 }
