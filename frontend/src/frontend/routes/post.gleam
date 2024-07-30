@@ -13,7 +13,7 @@ import gleam/option.{type Option, None, Some}
 import lustre/attribute.{class, id}
 import lustre/element
 import lustre/element/html.{
-  button, div, form, li, p, section, span, text, textarea, time,
+  button, div, form, li, ol, p, section, span, text, textarea, time,
 }
 import lustre/event
 import shared.{type PostComment}
@@ -78,7 +78,15 @@ pub fn show_post_view(model: Model) {
               )
           },
         ]),
-        ..comments_view(model, post.comments, None)
+        ol(
+          [attribute.id("comments")],
+          comments_view(
+            model,
+            post.comments
+              |> list.sort(fn(a, b) { int.compare(b.likes, a.likes) }),
+            None,
+          ),
+        ),
       ])
     None -> div([], [text("Loading...")])
   }
