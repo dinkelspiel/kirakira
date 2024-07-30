@@ -28,17 +28,21 @@ pub fn login_view(model: Model) {
   div([class("flex flex-col  mx-auto max-w-[450px] w-full gap-4")], [
     h1([class("text-[#584355] font-bold")], [text("Login")]),
     form([class("grid gap-2 w-full"), event.on_submit(RequestLogin)], [
-      label([], [text("E-mail or Username")]),
+      label([attribute.for("login_form:email_username")], [
+        text("E-mail or Username"),
+      ]),
       input([
         input_class(),
         event.on_input(LoginUpdateEmailUsername),
+        attribute.id("login_form:email_username"),
         attribute.type_("text"),
         attribute.attribute("autocomplete", "username"),
       ]),
-      label([], [text("Password")]),
+      label([attribute.for("login_form:password")], [text("Password")]),
       input([
         input_class(),
         event.on_input(LoginUpdatePassword),
+        attribute.id("login_form:password"),
         attribute.attribute("type", "password"),
         attribute.attribute("autocomplete", "current-password"),
       ]),

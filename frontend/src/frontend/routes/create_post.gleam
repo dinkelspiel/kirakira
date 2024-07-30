@@ -32,30 +32,39 @@ pub fn create_post_view(model: Model) {
         div(
           [class("grid sm:grid-cols-[170px,1fr] justify-start gap-2 w-full")],
           [
-            label([], [text("Title")]),
+            label([attribute.for("post_form:title")], [text("Title")]),
             input([
               input_class(),
               event.on_input(CreatePostUpdateTitle),
+              attribute.id("post_form:title"),
               attribute.type_("text"),
             ]),
-            label([], [text("Is this by you?")]),
+            label([attribute.for("post_form:by_you")], [text("Is this by you?")]),
             input([
               attribute.attribute("type", "checkbox"),
+              attribute.id("post_form:by_you"),
               event.on_check(CreatePostUpdateOriginalCreator),
               class("mx-auto accent-[#ffaff3]/50"),
             ]),
-            label([], [text("Replace link with body?")]),
+            label([attribute.for("post_form:replace_link")], [
+              text("Replace link with body?"),
+            ]),
             input([
               attribute.attribute("type", "checkbox"),
+              attribute.id("post_form:replace_link"),
               event.on_check(CreatePostUpdateUseBody),
               class("mx-auto accent-[#ffaff3]/50"),
             ]),
             case model.create_post_use_body {
               True ->
                 element.fragment([
-                  label([], [text("Body")]),
+                  label([attribute.for("post_form:body")], [text("Body")]),
                   textarea(
-                    [input_class(), event.on_input(CreatePostUpdateBody)],
+                    [
+                      input_class(),
+                      attribute.id("post_form:body"),
+                      event.on_input(CreatePostUpdateBody),
+                    ],
                     "",
                   ),
                   div([], []),
@@ -74,9 +83,10 @@ pub fn create_post_view(model: Model) {
                 ])
               False ->
                 element.fragment([
-                  label([], [text("Link")]),
+                  label([attribute.for("post_form:link")], [text("Link")]),
                   input([
                     input_class(),
+                    attribute.id("post_form:link"),
                     event.on_input(CreatePostUpdateHref),
                     attribute.type_("url"),
                   ]),
