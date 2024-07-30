@@ -6,7 +6,7 @@ import gleam/int
 import gleam/json
 import lustre/attribute.{class}
 import lustre/element.{text}
-import lustre/element/html.{button, div}
+import lustre/element/html.{button, div, label}
 import lustre/event
 import lustre_http
 
@@ -16,6 +16,7 @@ pub fn like_button_view(user_likes: Bool, likes: Int, msg: Msg, classes: String)
       class("flex flex-col justify-center items-center"),
       class(classes),
       event.on_click(msg),
+      attribute.type_("button"),
     ],
     [
       div(
@@ -37,7 +38,7 @@ pub fn like_button_view(user_likes: Bool, likes: Int, msg: Msg, classes: String)
         ],
         [],
       ),
-      div([class("text-xs text-neutral-500")], [text(likes |> int.to_string)]),
+      label([class("text-xs text-neutral-500")], [text(likes |> int.to_string)]),
     ],
   )
 }
