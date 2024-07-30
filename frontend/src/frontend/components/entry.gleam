@@ -1,6 +1,7 @@
 import birl
 import frontend/components/like.{like_button_view}
 import frontend/components/tag.{tag_view}
+import frontend/lib/time
 import frontend/state.{RequestLikePost}
 import gleam/int
 import gleam/list
@@ -79,7 +80,7 @@ pub fn entry_view(post: Post) {
                 ),
               ],
               [
-                text(birl.legible_difference(
+                text(time.legible_difference(
                   birl.now(),
                   birl.from_unix(post.created_at),
                 )),

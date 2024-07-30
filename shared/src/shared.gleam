@@ -1,5 +1,5 @@
-import gleam/option.{type Option}
 import gleam/io
+import gleam/option.{type Option}
 
 pub type Post {
   Post(
