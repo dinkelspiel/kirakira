@@ -3,6 +3,7 @@ import frontend/components/button.{button_class}
 import frontend/components/entry.{entry_view}
 import frontend/components/input.{input_class}
 import frontend/components/like.{like_button_view}
+import frontend/lib/time
 import frontend/state.{
   type Model, CreateCommentUpdateBody, CreateCommentUpdateParentId,
   RequestCreateComment, RequestLikeComment,
@@ -120,7 +121,7 @@ fn comments_view(
                     ),
                   ],
                   [
-                    text(birl.legible_difference(
+                    text(time.legible_difference(
                       birl.now(),
                       birl.from_unix(comment.created_at),
                     )),

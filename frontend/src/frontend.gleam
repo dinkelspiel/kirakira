@@ -34,7 +34,7 @@ import lustre
 import lustre/attribute.{class, href, src}
 import lustre/effect.{type Effect}
 import lustre/element.{type Element, text}
-import lustre/element/html.{a, body, div, img, nav, span}
+import lustre/element/html.{a, body, img, nav, span}
 import lustre_http
 import modem
 import shared.{type Post, type PostComment, type Tag, Post, PostComment, Tag}
@@ -72,32 +72,38 @@ fn init(_) -> #(Model, Effect(Msg)) {
       tags: [],
       invite_link: None,
     ),
-    effect.batch([
-      modem.init(on_url_change),
-      get_auth_user(),
-      get_posts(),
-    ] |> list.append(case get_route() {
-      ShowPost(_) -> [get_show_post()]
-      Signup(_) -> [get_inviter(get_auth_code())]
-      _ -> []
-    })),
+    effect.batch(
+      [modem.init(on_url_change), get_auth_user(), get_posts()]
+      |> list.append(case get_route() {
+        ShowPost(_) -> [get_show_post()]
+        Signup(_) -> [get_inviter(get_auth_code())]
+        _ -> []
+      }),
+    ),
   )
 }
 
 fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   case msg {
-    OnRouteChange(route) -> #(Model(..model, route: route, show_post: case route {
-      ShowPost(_) -> None
-      _ -> model.show_post
-    }), case route {
-      ShowPost(_) -> get_show_post()
-      CreatePost ->
-        case model.tags {
-          [] -> get_tags()
-          _ -> effect.none()
-        }
-      _ -> effect.none()
-    })
+    OnRouteChange(route) -> #(
+      Model(
+        ..model,
+        route: route,
+        show_post: case route {
+          ShowPost(_) -> None
+          _ -> model.show_post
+        },
+      ),
+      case route {
+        ShowPost(_) -> get_show_post()
+        CreatePost ->
+          case model.tags {
+            [] -> get_tags()
+            _ -> effect.none()
+          }
+        _ -> effect.none()
+      },
+    )
     InviterRecieved(auth_code_result) ->
       case auth_code_result {
         Ok(res) -> #(Model(..model, inviter: res.username), effect.none())
@@ -178,14 +184,12 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
                 sign_up_password: "",
                 sign_up_error: None,
               ),
-              case uri.parse(env.get_api_url()) {
-                Ok(uri) ->
-                  effect.from(fn(dispatch) {
-                    on_url_change(uri)
-                    |> dispatch
-                  })
-                Error(_) -> panic as "Error parsing uri"
-              },
+              effect.batch([
+                modem.push("/", None, None),
+                get_auth_user(),
+                get_show_post(),
+                get_posts(),
+              ]),
             )
           }
         Error(_) -> #(
@@ -225,15 +229,10 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
                 login_error: None,
               ),
               effect.batch([
-                case uri.parse(env.get_api_url()) {
-                  Ok(uri) ->
-                    effect.from(fn(dispatch) {
-                      on_url_change(uri)
-                      |> dispatch
-                    })
-                  Error(_) -> panic as "Error parsing uri"
-                },
+                modem.push("/", None, None),
                 get_auth_user(),
+                get_posts(),
+                get_show_post(),
               ]),
             )
           }
@@ -247,16 +246,11 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 
     RequestLogout -> #(model, logout(model))
     LogoutResponded(_) -> #(
-      model,
+      Model(..model, auth_user: None),
       effect.batch([
-        case uri.parse(env.get_api_url()) {
-          Ok(uri) ->
-            effect.from(fn(dispatch) {
-              on_url_change(uri)
-              |> dispatch
-            })
-          Error(_) -> panic as "Error parsing uri"
-        },
+        modem.push("/", None, None),
+        get_posts(),
+        get_show_post(),
         get_auth_user(),
       ]),
     )
@@ -314,17 +308,7 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
                 create_post_tags: [],
                 create_post_error: None,
               ),
-              case uri.parse(env.get_api_url()) {
-                Ok(uri) ->
-                  effect.batch([
-                    effect.from(fn(dispatch) {
-                      on_url_change(uri)
-                      |> dispatch
-                    }),
-                    get_posts(),
-                  ])
-                Error(_) -> panic as "Error parsing uri"
-              },
+              effect.batch([modem.push("/", None, None), get_posts()]),
             )
           }
         Error(_) -> #(
@@ -336,7 +320,10 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
       }
 
     RequestLikePost(post_id) -> #(model, like_post(post_id))
-    LikePostResponded(_) -> #(model, effect.none())
+    LikePostResponded(_) -> #(model, case model.show_post {
+      Some(_) -> get_show_post()
+      None -> get_posts()
+    })
 
     CreateCommentUpdateBody(body) -> #(
       Model(..model, create_comment_body: body),
@@ -383,7 +370,7 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
       model,
       like_comment(post_comment_id),
     )
-    LikeCommentResponded(_) -> #(model, effect.none())
+    LikeCommentResponded(_) -> #(model, get_show_post())
 
     RequestCreateAuthCode -> #(model, create_auth_code())
     CreateAuthCodeResponded(resp_result) ->
@@ -391,12 +378,12 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
         Ok(resp) ->
           case resp.message {
             Some(code) -> {
-              set_clipboard("https://kirakira.keii.dev/auth/signup/" <> code)
+              set_clipboard(env.get_api_url() <> "/auth/signup/" <> code)
               #(
                 Model(
                   ..model,
                   invite_link: Some(
-                    "https://kirakira.keii.dev/auth/signup/" <> code,
+                    env.get_api_url() <> "/auth/signup/" <> code,
                   ),
                 ),
                 effect.none(),
@@ -753,7 +740,7 @@ fn view(model: Model) -> Element(Msg) {
         Signup(auth_code), _ -> signup_view(model, auth_code)
         CreatePost, Some(_) -> create_post_view(model)
         ShowPost(_), _ -> show_post_view(model)
-        UserPage(_), _ -> user_view(model)
+        UserPage(_), Some(_) -> user_view(model)
         NotFound, _ -> text("404 Not found")
         _, _ -> text("404 Not found")
       },
