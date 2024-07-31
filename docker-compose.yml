@@ -49,6 +49,9 @@ services:
         source: ./shared
         target: /shared
       - type: bind
+        source: ./client
+        target: /client
+      - type: bind
         source: ./gmysql
         target: /gmysql
 volumes:

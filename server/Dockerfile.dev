@@ -7,10 +7,11 @@ RUN apk add rebar3 build-base bsd-compat-headers curl watchexec
 COPY ./server /app
 COPY ./gmysql /gmysql
 COPY ./shared /shared
+COPY ./client /client
 WORKDIR /app
-ENV DB_HOST mysql 
-ENV DB_PASSWORD kirakira 
-ENV DB_USER root 
-ENV DB_NAME kirakira 
+ENV DB_HOST mysql
+ENV DB_PASSWORD kirakira
+ENV DB_USER root
+ENV DB_NAME kirakira
 ENV DB_PORT 3306
 CMD ["watchexec", "-r", "-e", "gleam", "--", "gleam", "run"]
