@@ -17,7 +17,7 @@ $ sh setup-dev.env.sh
 > to run:
 
 ```sh
-$ docker-compose up mysql backend frontend -d
+$ docker-compose up mysql server client -d
 ```
 
 for all future runs if you want to persist your development data
@@ -29,9 +29,9 @@ Install [gleam](https://gleam.run/getting-started/install.html) and
 [hosted mysql](https://planetscale.com/)
 
 ```sh
-cd frontend
+cd client
 gleam run -m lustre/dev start --proxy-from=/api --proxy-to=http://localhost:8001/api
-cd ../backend
+cd ../server
 DB_HOST=localhost DB_PASSWORD=kirakira DB_USER=root DB_NAME=kirakira DB_PORT=3306 gleam run
 ```
 
@@ -41,10 +41,10 @@ DB_HOST=localhost DB_PASSWORD=kirakira DB_USER=root DB_NAME=kirakira DB_PORT=330
 ## SSR Builds
 
 ```sh
-cd ./frontend
-gleam run -m lustre/dev build --outdir=../backend/priv/static --minify
-cd ../backend
+cd ./client
+gleam run -m lustre/dev build --outdir=../server/priv/static --minify
+cd ../server
 DB_HOST=localhost DB_PASSWORD=kirakira DB_USER=root DB_NAME=kirakira DB_PORT=3306 gleam run
 ```
 
-> Note make sure your `frontend/src/env.gleam` is set to `http://localhost:8001`
+> Note make sure your `client/src/env.gleam` is set to `http://localhost:8001`
