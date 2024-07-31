@@ -37,3 +37,14 @@ DB_HOST=localhost DB_PASSWORD=kirakira DB_USER=root DB_NAME=kirakira DB_PORT=330
 
 > Note this does require you to have a mysql server running on localhost,
 > or change the env vars to a hosted instance
+
+## SSR Builds
+
+```sh
+cd ./frontend
+gleam run -m lustre/dev build --outdir=../backend/priv/static --minify
+cd ../backend
+DB_HOST=localhost DB_PASSWORD=kirakira DB_USER=root DB_NAME=kirakira DB_PORT=3306 gleam run
+```
+
+> Note make sure your `frontend/src/env.gleam` is set to `http://localhost:8001`

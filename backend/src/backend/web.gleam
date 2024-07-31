@@ -6,10 +6,10 @@ import wisp
 /// Middleware wrap each other, so the request travels through the stack from
 /// top to bottom until it reaches the request handler, at which point the
 /// response travels back up through the stack.
-/// 
+///
 /// The middleware used here are the ones that are suitable for use in your
 /// typical web application.
-/// 
+///
 pub fn middleware(
   req: wisp.Request,
   handle_request: fn(wisp.Request) -> wisp.Response,
@@ -26,6 +26,13 @@ pub fn middleware(
 
   // Rewrite HEAD requests to GET requests and return an empty body.
   use req <- wisp.handle_head(req)
+
+  let assert Ok(priv_directory) = wisp.priv_directory("backend")
+  use <- wisp.serve_static(
+    req,
+    under: "/static",
+    from: priv_directory <> "/static",
+  )
 
   // Handle the request!
   handle_request(req)

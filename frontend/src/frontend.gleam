@@ -686,7 +686,7 @@ fn create_comment(model: Model) {
   )
 }
 
-fn view(model: Model) -> Element(Msg) {
+pub fn view(model: Model) -> Element(Msg) {
   body(
     [
       class(
