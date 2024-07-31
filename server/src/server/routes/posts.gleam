@@ -24,29 +24,25 @@ pub fn posts(req: Request) -> Response {
   // This handler for `/comments` can respond to both GET and POST requests,
   // so we pattern match on the method here.
   case req.method {
-    Get -> response.generate_wisp_response(list_posts_json(req))
+    Get -> list_posts_res(req)
     Post -> create_post(req)
     _ -> wisp.method_not_allowed([Get, Post])
   }
 }
 
-pub fn list_posts(req: Request) {
-  let result = {
-    let result =
-      post.get_posts_query()
-      |> post.run_post_query([])
+pub fn list_posts(req: Request) -> Result(List(shared.Post), String) {
+  let result =
+    post.get_posts_query()
+    |> post.run_post_query([])
 
-    case result {
-      Ok(rows) -> Ok(post.post_rows_to_post(req, rows, False))
-      Error(_) -> Error("Selecting posts")
-    }
+  case result {
+    Ok(rows) -> Ok(post.post_rows_to_post(req, rows, False))
+    Error(_) -> Error("Selecting posts")
   }
-
-  result
 }
 
-pub fn list_posts_json(req: Request) {
-  let result = {
+pub fn list_posts_res(req: Request) -> Response {
+  let query = {
     let result =
       post.get_posts_query()
       |> post.run_post_query([])
@@ -57,7 +53,7 @@ pub fn list_posts_json(req: Request) {
     }
   }
 
-  case result {
+  let result = case query {
     Ok(rows) ->
       Ok(
         json.object([
@@ -71,6 +67,8 @@ pub fn list_posts_json(req: Request) {
       )
     Error(error) -> Error(error)
   }
+
+  response.generate_wisp_response(result)
 }
 
 type CreatePost {

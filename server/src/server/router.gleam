@@ -97,11 +97,23 @@ fn page_routes(req: Request, route_segments: List(String)) -> Response {
           Error(_) -> []
         }
       },
-      show_post: None,
+      show_post: {
+        case route {
+          ShowPost(id) ->
+            case post.show_post(req, id) {
+              Ok(post) -> Some(post)
+              Error(_) -> None
+            }
+          _ -> None
+        }
+      },
       create_comment_body: "",
       create_comment_parent_id: None,
       create_comment_error: None,
-      tags: [],
+      tags: case tags.list_tags() {
+        Ok(tags) -> tags
+        Error(_) -> []
+      },
       invite_link: None,
     )
 
