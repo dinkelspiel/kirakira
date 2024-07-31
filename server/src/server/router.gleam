@@ -1,3 +1,15 @@
+import client
+import client/state.{
+  type Route, Active, CreatePost, Login, Model, NotFound, ShowPost, Signup,
+  UserPage,
+}
+import cors_builder as cors
+import gleam/http
+import gleam/int
+import gleam/option.{None, Some}
+import lustre/element
+import server/db/user
+import server/db/user_session
 import server/response
 import server/routes/auth/login
 import server/routes/auth/logout
@@ -12,16 +24,6 @@ import server/routes/tags
 import server/routes/users
 import server/scaffold.{page_scaffold}
 import server/web
-import client
-import client/state.{
-  type Route, Active, CreatePost, Login, Model, NotFound, ShowPost, Signup,
-  UserPage,
-}
-import cors_builder as cors
-import gleam/http
-import gleam/int
-import gleam/option.{None}
-import lustre/element
 import wisp.{type Request, type Response}
 
 fn cors() {
@@ -39,11 +41,11 @@ pub fn handle_request(req: Request) -> Response {
   // note assets under /static are caught by web.middleware before this
   case wisp.path_segments(req) {
     ["api", ..] -> api_routes(req, wisp.path_segments(req))
-    _ -> page_routes(wisp.path_segments(req))
+    _ -> page_routes(req, wisp.path_segments(req))
   }
 }
 
-fn page_routes(route_segments: List(String)) -> Response {
+fn page_routes(req: Request, route_segments: List(String)) -> Response {
   let route: Route = case route_segments {
     [] -> Active
     ["auth", "login"] -> Login
@@ -62,7 +64,19 @@ fn page_routes(route_segments: List(String)) -> Response {
     Model(
       route,
       inviter: "",
-      auth_user: None,
+      auth_user: case user_session.get_user_id_from_session(req) {
+        Ok(user_id) ->
+          case user.get_user_by_id(user_id) {
+            Ok(user) ->
+              Some(state.AuthUser(
+                is_admin: user.is_user_admin(user.id),
+                user_id: user_id,
+                username: user.username,
+              ))
+            Error(_) -> None
+          }
+        Error(_) -> None
+      },
       sign_up_username: "",
       sign_up_email: "",
       sign_up_password: "",
