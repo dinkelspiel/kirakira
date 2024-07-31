@@ -1,10 +1,3 @@
-import server/db
-import server/db/post
-import server/db/post_tag
-import server/db/tag
-import server/db/user
-import server/db/user_session
-import server/response
 import cake/insert as i
 import cake/select as s
 import cake/where as w
@@ -17,6 +10,13 @@ import gleam/option.{type Option, None, Some}
 import gleam/regex
 import gleam/result
 import gmysql
+import server/db
+import server/db/post
+import server/db/post_tag
+import server/db/tag
+import server/db/user
+import server/db/user_session
+import server/response
 import shared.{Admin}
 import wisp.{type Request, type Response}
 
@@ -24,13 +24,28 @@ pub fn posts(req: Request) -> Response {
   // This handler for `/comments` can respond to both GET and POST requests,
   // so we pattern match on the method here.
   case req.method {
-    Get -> list_posts(req)
+    Get -> response.generate_wisp_response(list_posts_json(req))
     Post -> create_post(req)
     _ -> wisp.method_not_allowed([Get, Post])
   }
 }
 
-pub fn list_posts(req: Request) -> Response {
+pub fn list_posts(req: Request) {
+  let result = {
+    let result =
+      post.get_posts_query()
+      |> post.run_post_query([])
+
+    case result {
+      Ok(rows) -> Ok(post.post_rows_to_post(req, rows, False))
+      Error(_) -> Error("Selecting posts")
+    }
+  }
+
+  result
+}
+
+pub fn list_posts_json(req: Request) {
   let result = {
     let result =
       post.get_posts_query()
@@ -42,7 +57,7 @@ pub fn list_posts(req: Request) -> Response {
     }
   }
 
-  response.generate_wisp_response(case result {
+  case result {
     Ok(rows) ->
       Ok(
         json.object([
@@ -55,7 +70,7 @@ pub fn list_posts(req: Request) -> Response {
         |> json.to_string_builder,
       )
     Error(error) -> Error(error)
-  })
+  }
 }
 
 type CreatePost {

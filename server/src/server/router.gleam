@@ -91,7 +91,12 @@ fn page_routes(req: Request, route_segments: List(String)) -> Response {
       create_post_tags: [],
       create_post_use_body: False,
       create_post_error: None,
-      posts: [],
+      posts: {
+        case posts.list_posts(req) {
+          Ok(posts) -> posts
+          Error(_) -> []
+        }
+      },
       show_post: None,
       create_comment_body: "",
       create_comment_parent_id: None,
