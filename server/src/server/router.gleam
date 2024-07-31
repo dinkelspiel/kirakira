@@ -26,22 +26,57 @@ import server/scaffold.{page_scaffold}
 import server/web
 import wisp.{type Request, type Response}
 
-fn cors() {
-  cors.new()
-  |> cors.allow_origin("http://localhost:1234")
-  |> cors.allow_method(http.Get)
-  |> cors.allow_method(http.Post)
-  |> cors.allow_header("content-type")
-}
-
 pub fn handle_request(req: Request) -> Response {
   use req <- web.middleware(req)
-  use req <- cors.wisp_middleware(req, cors())
+  use req <- cors.wisp_middleware(
+    req,
+    cors.new()
+      |> cors.allow_origin("http://localhost:1234")
+      |> cors.allow_method(http.Get)
+      |> cors.allow_method(http.Post)
+      |> cors.allow_header("Content-Type"),
+  )
 
   // note assets under /static are caught by web.middleware before this
   case wisp.path_segments(req) {
     ["api", ..] -> api_routes(req, wisp.path_segments(req))
     _ -> page_routes(req, wisp.path_segments(req))
+  }
+}
+
+fn api_routes(req: Request, route_segments: List(String)) -> Response {
+  case route_segments {
+    ["api", "posts"] -> posts.posts(req)
+    ["api", "posts", post_id] ->
+      case int.parse(post_id) {
+        Ok(id) -> post.post(req, id)
+        Error(_) -> response.error("Invalid post_id for post, must be int")
+      }
+    ["api", "posts", post_id, "likes"] ->
+      case int.parse(post_id) {
+        Ok(post_id) -> post_likes.post_likes(req, post_id)
+        Error(_) -> response.error("Invalid post_id for post, must be int")
+      }
+    ["api", "posts", post_id, "comments"] ->
+      case int.parse(post_id) {
+        Ok(id) -> comment.comment(req, id)
+        Error(_) -> response.error("Invalid post_id for post, must be int")
+      }
+    ["api", "posts", "comments", post_comment_id, "likes"] ->
+      case int.parse(post_comment_id) {
+        Ok(post_comment_id) ->
+          post_comment_likes.post_comment_likes(req, post_comment_id)
+        Error(_) ->
+          response.error("Invalid post_comment_id for comment, must be int")
+      }
+    ["api", "users"] -> users.users(req)
+    ["api", "tags"] -> tags.tags(req)
+    ["api", "auth-code"] -> auth_code.auth_code(req, "")
+    ["api", "auth-code", token] -> auth_code.auth_code(req, token)
+    ["api", "auth", "validate"] -> validate.validate(req)
+    ["api", "auth", "login"] -> login.login(req)
+    ["api", "auth", "logout"] -> logout.logout(req)
+    _ -> wisp.not_found()
   }
 }
 
@@ -117,45 +152,11 @@ fn page_routes(req: Request, route_segments: List(String)) -> Response {
       invite_link: None,
     )
 
-  let content = client.view(model) |> page_scaffold()
-
   wisp.response(200)
   |> wisp.set_header("Content-Type", "text/html")
-  |> wisp.html_body(content |> element.to_document_string_builder())
-}
-
-fn api_routes(req: Request, route_segments: List(String)) -> Response {
-  case route_segments {
-    ["api", "posts"] -> posts.posts(req)
-    ["api", "posts", post_id] ->
-      case int.parse(post_id) {
-        Ok(id) -> post.post(req, id)
-        Error(_) -> response.error("Invalid post_id for post, must be int")
-      }
-    ["api", "posts", post_id, "likes"] ->
-      case int.parse(post_id) {
-        Ok(post_id) -> post_likes.post_likes(req, post_id)
-        Error(_) -> response.error("Invalid post_id for post, must be int")
-      }
-    ["api", "posts", post_id, "comments"] ->
-      case int.parse(post_id) {
-        Ok(id) -> comment.comment(req, id)
-        Error(_) -> response.error("Invalid post_id for post, must be int")
-      }
-    ["api", "posts", "comments", post_comment_id, "likes"] ->
-      case int.parse(post_comment_id) {
-        Ok(post_comment_id) ->
-          post_comment_likes.post_comment_likes(req, post_comment_id)
-        Error(_) ->
-          response.error("Invalid post_comment_id for comment, must be int")
-      }
-    ["api", "users"] -> users.users(req)
-    ["api", "tags"] -> tags.tags(req)
-    ["api", "auth-code"] -> auth_code.auth_code(req, "")
-    ["api", "auth-code", token] -> auth_code.auth_code(req, token)
-    ["api", "auth", "validate"] -> validate.validate(req)
-    ["api", "auth", "login"] -> login.login(req)
-    ["api", "auth", "logout"] -> logout.logout(req)
-    _ -> wisp.not_found()
-  }
+  |> wisp.html_body(
+    client.view(model)
+    |> page_scaffold()
+    |> element.to_document_string_builder(),
+  )
 }
