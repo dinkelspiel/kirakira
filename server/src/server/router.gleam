@@ -20,6 +20,8 @@ import server/routes/comments/likes as post_comment_likes
 import server/routes/post
 import server/routes/posts
 import server/routes/posts/likes as post_likes
+import server/routes/robots.{robots_txt}
+import server/routes/sitemap.{sitemap_xml}
 import server/routes/tags
 import server/routes/users
 import server/scaffold.{page_scaffold}
@@ -40,6 +42,8 @@ pub fn handle_request(req: Request) -> Response {
   // note assets under /static are caught by web.middleware before this
   case wisp.path_segments(req) {
     ["api", ..] -> api_routes(req, wisp.path_segments(req))
+    ["robots.txt"] -> robots_txt()
+    ["sitemap.xml"] -> sitemap_xml(req)
     _ -> page_routes(req, wisp.path_segments(req))
   }
 }

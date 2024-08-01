@@ -27,6 +27,7 @@ pub fn middleware(
   // Rewrite HEAD requests to GET requests and return an empty body.
   use req <- wisp.handle_head(req)
 
+  // Serve build output site files
   let assert Ok(priv_directory) = wisp.priv_directory("server")
   use <- wisp.serve_static(
     req,
