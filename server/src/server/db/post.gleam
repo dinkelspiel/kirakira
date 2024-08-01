@@ -107,7 +107,7 @@ pub fn run_post_query(select: Select, params: List(gmysql.Param)) {
   })
 }
 
-fn get_tags_for_post(post_id: Int) {
+pub fn get_tags_for_post(post_id: Int) {
   let result =
     s.new()
     |> s.selects([s.col("tag.id"), s.col("tag.name")])
