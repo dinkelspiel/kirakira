@@ -29,22 +29,10 @@ Install [gleam](https://gleam.run/getting-started/install.html) and
 [hosted mysql](https://planetscale.com/)
 
 ```sh
-cd client
-gleam run -m lustre/dev start --proxy-from=/api --proxy-to=http://localhost:8001/api
-cd ../server
-DB_HOST=localhost DB_PASSWORD=kirakira DB_USER=root DB_NAME=kirakira DB_PORT=3306 gleam run
+sh ./run-csr.sh
+# or
+sh ./run-ssr.sh
 ```
 
 > Note this does require you to have a mysql server running on localhost,
 > or change the env vars to a hosted instance
-
-## SSR Builds
-
-```sh
-cd ./client
-gleam run -m lustre/dev build --outdir=../server/priv/static --minify
-cd ../server
-DB_HOST=localhost DB_PASSWORD=kirakira DB_USER=root DB_NAME=kirakira DB_PORT=3306 gleam run
-```
-
-> Note make sure your `client/src/env.gleam` is set to `http://localhost:8001`
