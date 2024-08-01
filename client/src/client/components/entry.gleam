@@ -6,7 +6,7 @@ import client/state.{RequestLikePost}
 import gleam/int
 import gleam/list
 import gleam/option.{None, Some}
-import lustre/attribute.{class, href}
+import lustre/attribute.{class, href, target}
 import lustre/element.{text}
 import lustre/element/html.{a, div, li, p, span, time}
 import shared.{type Post}
@@ -33,6 +33,7 @@ pub fn entry_view(post: Post) {
                 Some(post_href) -> post_href
                 None -> "/post/" <> { post.id |> int.to_string }
               }),
+              target("_blank"),
             ],
             [text(post.title)],
           ),
@@ -53,7 +54,11 @@ pub fn entry_view(post: Post) {
               case post.href {
                 Some(post_href) ->
                   a(
-                    [class("text-xs text-neutral-500 italic"), href(post_href)],
+                    [
+                      class("text-xs text-neutral-500 italic"),
+                      href(post_href),
+                      target("_blank"),
+                    ],
                     [text(post_href)],
                   )
                 None -> element.none()
