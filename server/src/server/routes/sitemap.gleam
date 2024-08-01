@@ -4,11 +4,12 @@ import gleam/io
 import gleam/list
 import gleam/result
 import gleam/string_builder.{type StringBuilder}
-import server/routes/posts
-import wisp.{type Request, type Response}
+import wisp.{type Response}
 import xmleam/xml_builder.{
   type BuilderError, type XmlBuilder, ContentsEmpty, block_tag, new, tag,
 }
+
+import server/db/sitemap.{type PostSitemap, get_post_sitemap}
 
 fn new_sitemap(map: StringBuilder) -> XmlBuilder {
   string_builder.new()
@@ -20,21 +21,15 @@ fn new_sitemap(map: StringBuilder) -> XmlBuilder {
   |> Ok
 }
 
-pub fn sitemap_xml(req: Request) -> Response {
-  // TODO: this needs to grab comments with the post
-  let posts = case posts.list_posts(req) {
-    Ok(posts) -> posts
-    Error(_) -> []
-  }
+pub fn sitemap_xml() -> Response {
+  let posts: List(PostSitemap) = get_post_sitemap()
 
   let post_map: Result(StringBuilder, BuilderError) = {
     case
       list.map(posts, fn(post) {
         let post_updated_at: Int =
-          post.comments
-          |> list.map(fn(comment) { comment.created_at })
+          post.comments_at
           |> list.reduce(fn(acc, x) {
-            io.debug(acc)
             case acc < x {
               True -> x
               False -> acc
@@ -62,7 +57,14 @@ pub fn sitemap_xml(req: Request) -> Response {
             False -> "daily"
             True -> "weekly"
           })
-          |> tag("priority", "0.5")
+          |> tag("priority", {
+            let inactive: Bool =
+              { { birl.now() |> birl.to_unix() } - post_updated_at } > 864_000
+            case inactive {
+              True -> "0.5"
+              False -> "0.7"
+            }
+          })
         })
       })
       |> list.reduce(fn(acc, x) {

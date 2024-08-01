@@ -43,7 +43,7 @@ pub fn handle_request(req: Request) -> Response {
   case wisp.path_segments(req) {
     ["api", ..] -> api_routes(req, wisp.path_segments(req))
     ["robots.txt"] -> robots_txt()
-    ["sitemap.xml"] -> sitemap_xml(req)
+    ["sitemap.xml"] -> sitemap_xml()
     _ -> page_routes(req, wisp.path_segments(req))
   }
 }
