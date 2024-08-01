@@ -4,9 +4,6 @@ RUN apk add \
     --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
     gleam=~1.3
 RUN apk add rebar3 build-base bsd-compat-headers curl
-COPY ./server /app
-COPY ./gmysql /gmysql
-COPY ./shared /shared
-COPY ./client /client
+COPY . /app
 WORKDIR /app
-CMD ["gleam", "run"]
+CMD ["sh", "run-ssr.sh"]
