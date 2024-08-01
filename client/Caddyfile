@@ -1,0 +1,13 @@
+http://:3000 
+
+encode gzip
+
+handle_path /api/* {
+  reverse_proxy http://kirakira-server:8001
+}
+
+handle {
+  root * /srv
+  try_files {path} /index.html
+  file_server
+}
