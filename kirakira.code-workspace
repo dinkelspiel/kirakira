@@ -1,10 +1,10 @@
 {
   "folders": [
 	{
-		"path": "backend"
+		"path": "server"
 	},
 	{
-		"path": "frontend"
+		"path": "client"
 	},
 	{
 		"path": "shared"

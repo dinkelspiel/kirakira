@@ -22,32 +22,35 @@ services:
       - PMA_HOST=mysql
       - PMA_USER=root
       - PMA_PASSWORD=kirakira
-  frontend:
+  client:
     build:
       context: .
-      dockerfile: ./frontend/Dockerfile.dev
+      dockerfile: ./client/Dockerfile.dev
     ports:
-      - '1234:1234'
+      - "1234:1234"
     volumes:
       - type: bind
-        source: ./frontend
+        source: ./client
         target: /app
       - type: bind
         source: ./shared
         target: /shared
-  backend: 
+  server:
     build:
       context: .
-      dockerfile: ./backend/Dockerfile.dev
+      dockerfile: ./server/Dockerfile.dev
     ports:
-      - '8001:8001'
+      - "8001:8001"
     volumes:
       - type: bind
-        source: ./backend
+        source: ./server
         target: /app
       - type: bind
         source: ./shared
         target: /shared
+      - type: bind
+        source: ./client
+        target: /client
       - type: bind
         source: ./gmysql
         target: /gmysql
