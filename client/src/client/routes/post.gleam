@@ -20,7 +20,7 @@ import lustre/event
 import shared.{type PostComment}
 
 fn create_comment_view(model: Model) {
-  form([class("grid gap-2")], [
+  form([class("grid gap-2"), event.on_submit(RequestCreateComment)], [
     textarea(
       [
         input_class(),
@@ -39,7 +39,6 @@ fn create_comment_view(model: Model) {
     button(
       [
         button_class(),
-        event.on_click(RequestCreateComment),
         case model.auth_user {
           None -> attribute.disabled(True)
           _ -> attribute.none()

@@ -26,14 +26,7 @@ pub fn create_post_view(model: Model) {
     [
       h1([class("text-[#584355] font-bold")], [text("Create Post")]),
       form(
-        [
-          class("w-full gap-4 grid"),
-          // this is to force the form to check button enabbled state instead
-          event.on("submit", fn(e) {
-            event.prevent_default(e)
-            Error([])
-          }),
-        ],
+        [class("w-full gap-4 grid"), event.on_submit(RequestCreatePost)],
         list.append(
           [
             div(
@@ -163,7 +156,6 @@ pub fn create_post_view(model: Model) {
                   || list.is_empty(model.create_post_tags),
                 ),
                 class("mx-auto"),
-                event.on_click(RequestCreatePost),
                 attribute.type_("submit"),
               ],
               [text("Create Post")],
