@@ -34,7 +34,7 @@ import lustre
 import lustre/attribute.{class, href, src}
 import lustre/effect.{type Effect}
 import lustre/element.{type Element, text}
-import lustre/element/html.{a, body, img, nav, span}
+import lustre/element/html.{a, body, footer, img, nav, span}
 import lustre_http
 import modem
 import shared.{type Post, type PostComment, type Tag, Post, PostComment, Tag}
@@ -690,7 +690,7 @@ pub fn view(model: Model) -> Element(Msg) {
   body(
     [
       class(
-        "bg-[#fefefc] text-[#151515] w-[100vw] min-h-[100vh] h-[100vh] px-4 max-w-[800px] py-4 mx-auto flex flex-col gap-4",
+        "bg-[#fefefc] text-[#151515] w-[100vw] min-h-[100vh] h-[100vh] px-4 max-w-[800px] py-4 mx-auto flex flex-col h-screen gap-4",
       ),
     ],
     [
@@ -734,16 +734,28 @@ pub fn view(model: Model) -> Element(Msg) {
           },
         ],
       ),
-      case model.route, model.auth_user {
-        Active, _ -> latest_view(model)
-        Login, _ -> login_view(model)
-        Signup(auth_code), _ -> signup_view(model, auth_code)
-        CreatePost, Some(_) -> create_post_view(model)
-        ShowPost(_), _ -> show_post_view(model)
-        UserPage(_), Some(_) -> user_view(model)
-        NotFound, _ -> text("404 Not found")
-        _, _ -> text("404 Not found")
-      },
+      html.main([class("mb-auto")], [
+        case model.route, model.auth_user {
+          Active, _ -> latest_view(model)
+          Login, _ -> login_view(model)
+          Signup(auth_code), _ -> signup_view(model, auth_code)
+          CreatePost, Some(_) -> create_post_view(model)
+          ShowPost(_), _ -> show_post_view(model)
+          UserPage(_), Some(_) -> user_view(model)
+          NotFound, _ -> text("404 Not found")
+          _, _ -> text("404 Not found")
+        },
+      ]),
+      footer([class("text-center text-neutral-500 text-xs pb-2")], [
+        text("Made with <3 by the community, contribute on "),
+        a(
+          [
+            href("https://github.com/dinkelspiel/kirakira"),
+            class("hover:underline text-neutral-700 font-bold"),
+          ],
+          [text("GitHub")],
+        ),
+      ]),
     ],
   )
 }
