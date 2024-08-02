@@ -1,0 +1,3 @@
+[submodule "lustre_dev_tools"]
+	path = lustre_dev_tools
+	url = https://github.com/lustre-labs/dev-tools.git
