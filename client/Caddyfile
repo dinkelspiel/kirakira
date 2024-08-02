@@ -2,7 +2,7 @@ http://:3000
 
 encode gzip
 
-handle_path /api/* {
+handle /api/* {
   reverse_proxy http://kirakira-server:8001
 }
 
