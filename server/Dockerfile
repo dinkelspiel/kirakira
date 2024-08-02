@@ -5,7 +5,6 @@ RUN apk add \
     gleam=~1.3
 RUN apk add rebar3 build-base bsd-compat-headers curl
 COPY ./server /app
-COPY ./gmysql /gmysql
 COPY ./shared /shared
 COPY ./client /client
 WORKDIR /app
