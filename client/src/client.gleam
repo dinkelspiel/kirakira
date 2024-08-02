@@ -34,7 +34,7 @@ import lustre
 import lustre/attribute.{class, href, src}
 import lustre/effect.{type Effect}
 import lustre/element.{type Element, text}
-import lustre/element/html.{a, body, footer, img, nav, span}
+import lustre/element/html.{a, body, footer, img, nav, p, span}
 import lustre_http
 import modem
 import shared.{type Post, type PostComment, type Tag, Post, PostComment, Tag}
@@ -701,13 +701,13 @@ pub fn view(model: Model) -> Element(Msg) {
           ),
         ],
         [
-          span([class("flex gap-2 items-center")], [
+          a([href("/"), class("flex group gap-2 items-center")], [
             img([
               src("https://gleam.run/images/lucy/lucy.svg"),
               attribute.alt("Lucy"),
-              class("size-[18px]"),
+              class("size-[18px] group-hover:animate-wiggle"),
             ]),
-            a([href("/"), class("hover:underline")], [text("Latest")]),
+            p([class("group-hover:underline")], [text("Latest")]),
           ]),
           case model.auth_user {
             None ->
