@@ -31,7 +31,7 @@ import gleam/list
 import gleam/option.{None, Some}
 import gleam/uri.{type Uri}
 import lustre
-import lustre/attribute.{class, href, src}
+import lustre/attribute.{class, href, id, src}
 import lustre/effect.{type Effect}
 import lustre/element.{type Element, text}
 import lustre/element/html.{a, body, footer, img, nav, p, span}
@@ -692,6 +692,7 @@ pub fn view(model: Model) -> Element(Msg) {
       class(
         "bg-[#fefefc] text-[#151515] w-[100vw] min-h-[100vh] h-[100vh] px-4 max-w-[800px] py-4 mx-auto flex flex-col h-screen gap-4",
       ),
+      id("app"),
     ],
     [
       nav(

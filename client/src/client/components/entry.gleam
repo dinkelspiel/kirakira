@@ -42,7 +42,7 @@ pub fn entry_view(post: Post) {
               a(
                 [
                   attribute.attribute("title", post_body),
-                  class("text-xs text-neutral-500"),
+                  class("text-xs text-neutral-500 hidden sm:block"),
                 ],
                 [text("☶")],
               )
@@ -56,7 +56,7 @@ pub fn entry_view(post: Post) {
                   a(
                     [
                       class(
-                        "text-xs text-neutral-500 italic truncate max-w-[35ch] lg:max-w-[45ch]",
+                        "text-xs text-neutral-500 italic truncate max-w-[25ch] sm:max-w-[35ch] lg:max-w-[45ch]",
                       ),
                       href(post_href),
                       target("_blank"),
