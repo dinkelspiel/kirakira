@@ -17,7 +17,7 @@ $ sh setup-dev.env.sh
 > to run:
 
 ```sh
-$ docker-compose up mysql server client -d
+$ docker-compose up mysql server -d
 ```
 
 for all future runs if you want to persist your development data
@@ -36,3 +36,8 @@ sh ./run-ssr.sh
 
 > Note this does require you to have a mysql server running on localhost,
 > or change the env vars to a hosted instance
+
+## Notes
+
+- `lustre_dev_tools` is a temporary vendor, to be removed on next release of
+  the package to hex

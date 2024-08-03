@@ -8,6 +8,9 @@
 	},
 	{
 		"path": "shared"
+	},
+	{
+		"path": "lustre_dev_tools"
 	}
 ],
   "settings": {}
