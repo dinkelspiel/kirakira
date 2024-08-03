@@ -1,6 +1,0 @@
-*.beam
-*.ez
-/build
-erl_crash.dump
-/priv
-/src/env.gleam

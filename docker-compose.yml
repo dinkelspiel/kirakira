@@ -32,25 +32,6 @@ services:
       - type: bind
         source: ./
         target: /app
-  kirakira-csr-server:
-    environment:
-      - DB_HOST=mysql
-      - DB_NAME=kirakira
-      - DB_USER=root
-      - DB_PORT=3306
-      - DB_PASSWORD=kirakira
-    build:
-      context: .
-      dockerfile: ./server/Dockerfile
-    ports:
-      - "8001:8001"
-  kirakira-client:
-    build:
-      context: .
-      dockerfile: ./client/Dockerfile
-    ports:
-      - "3000:3000"
 volumes:
   mysql: ~
   dev:
-# mysql -h 127.0.0.1 -P 3306 -u root -p kirakira

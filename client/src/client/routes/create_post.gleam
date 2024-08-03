@@ -32,7 +32,7 @@ pub fn create_post_view(model: Model) {
             div(
               [
                 class(
-                  "grid sm:grid-cols-[170px,1fr] justify-start gap-2 w-full",
+                  "grid sm:grid-cols-[170px,1fr] items-center sm:justify-start gap-2 w-full",
                 ),
               ],
               [
@@ -68,6 +68,7 @@ pub fn create_post_view(model: Model) {
                       textarea(
                         [
                           input_class(),
+                          class("h-64 sm:h-36 md:h-24"),
                           attribute.id("post_form:body"),
                           event.on_input(CreatePostUpdateBody),
                         ],
@@ -101,7 +102,7 @@ pub fn create_post_view(model: Model) {
               ],
             ),
             div(
-              [class("grid sm:grid-cols-2 md:grid-cols-3 gap-4 px-4")],
+              [class("grid grid-cols-2 md:grid-cols-3 gap-4 px-4")],
               list.map(shared.tag_categories, fn(category) {
                 div([], [
                   html.h2([class("underline text-lg font-semibold")], [

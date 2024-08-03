@@ -1,6 +1,6 @@
-import lustre/attribute.{attribute, href, id, name, rel, src}
+import lustre/attribute.{attribute, href, name, rel, src}
 import lustre/element
-import lustre/element/html.{body, head, html, link, meta, script, title}
+import lustre/element/html.{head, html, link, meta, script, title}
 
 pub fn page_scaffold(content: element.Element(a)) {
   html([], [
@@ -56,6 +56,6 @@ pub fn page_scaffold(content: element.Element(a)) {
         "",
       ),
     ]),
-    body([id("app")], [content]),
+    content,
   ])
 }
