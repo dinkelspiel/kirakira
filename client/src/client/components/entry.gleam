@@ -55,7 +55,9 @@ pub fn entry_view(post: Post) {
                 Some(post_href) ->
                   a(
                     [
-                      class("text-xs text-neutral-500 italic"),
+                      class(
+                        "text-xs text-neutral-500 italic truncate max-w-[35ch] lg:max-w-[45ch]",
+                      ),
                       href(post_href),
                       target("_blank"),
                     ],
