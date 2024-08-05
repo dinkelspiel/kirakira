@@ -1,11 +1,13 @@
-import server/db.{list_to_tuple}
+import beecrypt
 import cake/select as s
+import cake/update as u
 import cake/where as w
 import decode
 import gleam/list
 import gleam/option.{type Option}
 import gleam/result
 import gmysql
+import server/db.{list_to_tuple}
 
 pub type User {
   User(
@@ -81,7 +83,7 @@ pub fn get_user_by_email(email: String) -> Result(User, String) {
   use user_result <- result.try(user)
   case user_result {
     Ok(user) -> Ok(user)
-    Error(_) -> Error("No user found when getting user by username")
+    Error(_) -> Error("No user found when getting user by email")
   }
 }
 
@@ -134,4 +136,18 @@ pub fn is_user_admin(user_id: Int) -> Bool {
       }
     Error(_) -> False
   }
+}
+
+/// Takes plain text password
+pub fn set_password_for_user(user_id: Int, password: String) {
+  u.new()
+  |> u.table("user")
+  |> u.sets([u.set_string("user.password", beecrypt.hash(password))])
+  |> u.where(w.eq(w.col("user.id"), w.int(user_id)))
+  |> u.to_query
+  |> db.execute_write([
+    gmysql.to_param(beecrypt.hash(password)),
+    gmysql.to_param(user_id),
+  ])
+  |> result.replace_error("Problem with updating user password")
 }

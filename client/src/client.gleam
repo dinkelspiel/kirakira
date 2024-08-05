@@ -1,26 +1,31 @@
 import client/components/button.{button_class}
 import client/components/like.{like_comment, like_post}
+import client/routes/change_password.{change_password}
 import client/routes/create_post.{create_post_view}
+import client/routes/forgot_password.{forgot_password}
 import client/routes/latest.{latest_view}
 import client/routes/login.{login, login_view}
 import client/routes/post.{show_post_view}
 import client/routes/signup.{signup_view}
 import client/routes/user.{user_view}
 import client/state.{
-  type Model, type Msg, type Route, Active, AuthCodeResponse, AuthUser,
-  AuthUserRecieved, CreateAuthCodeResponded, CreateCommentResponded,
-  CreateCommentUpdateBody, CreateCommentUpdateError, CreateCommentUpdateParentId,
-  CreatePost, CreatePostResponded, CreatePostUpdateBody, CreatePostUpdateError,
+  type Model, type Msg, type Route, Active, AuthUser, AuthUserRecieved,
+  ChangePassword, ChangePasswordResponded, ChangePasswordTargetRecieved,
+  CreateAuthCodeResponded, CreateCommentResponded, CreateCommentUpdateBody,
+  CreateCommentUpdateError, CreateCommentUpdateParentId, CreatePost,
+  CreatePostResponded, CreatePostUpdateBody, CreatePostUpdateError,
   CreatePostUpdateHref, CreatePostUpdateOriginalCreator, CreatePostUpdateTags,
-  CreatePostUpdateTitle, CreatePostUpdateUseBody, GetPostsResponse,
-  GetTagsResponse, InviterRecieved, LikeCommentResponded, LikePostResponded,
-  Login, LoginResponded, LoginUpdateEmailUsername, LoginUpdateError,
-  LoginUpdatePassword, LogoutResponded, Model, NotFound, OnRouteChange,
-  PostsRecieved, RequestCreateAuthCode, RequestCreateComment, RequestCreatePost,
-  RequestLikeComment, RequestLikePost, RequestLogin, RequestLogout,
-  RequestSignUp, ShowPost, ShowPostRecieved, SignUpResponded, SignUpUpdateEmail,
-  SignUpUpdateError, SignUpUpdatePassword, SignUpUpdateUsername, Signup,
-  TagsRecieved, UserPage, message_error_decoder,
+  CreatePostUpdateTitle, CreatePostUpdateUseBody, ForgotPassword,
+  ForgotPasswordResponded, GetPostsResponse, GetTagsResponse, InviterRecieved,
+  LikeCommentResponded, LikePostResponded, Login, LoginResponded,
+  LoginUpdateEmailUsername, LoginUpdateError, LoginUpdatePassword,
+  LogoutResponded, Model, NotFound, OnRouteChange, PostsRecieved,
+  RequestChangePassword, RequestCreateAuthCode, RequestCreateComment,
+  RequestCreatePost, RequestForgotPassword, RequestLikeComment, RequestLikePost,
+  RequestLogin, RequestLogout, RequestSignUp, ShowPost, ShowPostRecieved,
+  SignUpResponded, SignUpUpdateEmail, SignUpUpdateError, SignUpUpdatePassword,
+  SignUpUpdateUsername, Signup, TagsRecieved, UserPage, UsernameResponse,
+  message_error_decoder,
 }
 import decode
 import env
@@ -71,12 +76,15 @@ fn init(_) -> #(Model, Effect(Msg)) {
       create_comment_error: None,
       tags: [],
       invite_link: None,
+      forgot_password_response: None,
+      change_password_target: "",
     ),
     effect.batch(
       [modem.init(on_url_change), get_auth_user(), get_posts()]
       |> list.append(case get_route() {
         ShowPost(_) -> [get_show_post()]
         Signup(_) -> [get_inviter(get_auth_code())]
+        ChangePassword(token) -> [get_change_password_target(token)]
         _ -> []
       }),
     ),
@@ -393,6 +401,51 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
           }
         Error(_) -> #(model, effect.none())
       }
+
+    RequestForgotPassword -> #(model, request_forgot_password(model))
+    ForgotPasswordResponded(resp_result) ->
+      case resp_result {
+        Ok(resp) -> #(
+          Model(
+            ..model,
+            login_email_username: "",
+            forgot_password_response: case resp.message {
+              Some(message) -> Some(Ok(message))
+              None ->
+                case resp.error {
+                  Some(error) -> Some(Error(error))
+                  None -> None
+                }
+            },
+          ),
+          effect.none(),
+        )
+        Error(_) -> #(
+          Model(..model, forgot_password_response: Some(Error("HTTP Error"))),
+          effect.none(),
+        )
+      }
+    ChangePasswordTargetRecieved(target_response) ->
+      case target_response {
+        Ok(res) -> #(
+          Model(..model, change_password_target: res.username),
+          effect.none(),
+        )
+        Error(_) -> #(model, effect.none())
+      }
+
+    RequestChangePassword -> #(model, send_password_change(model))
+    ChangePasswordResponded(resp_result) ->
+      case resp_result {
+        Ok(_) -> #(
+          Model(..model, login_password: ""),
+          modem.push("/auth/login", None, None),
+        )
+        Error(_) -> #(
+          Model(..model, forgot_password_response: Some(Error("HTTP Error"))),
+          effect.none(),
+        )
+      }
   }
 }
 
@@ -420,6 +473,8 @@ fn get_route() -> Route {
     [] -> Active
     ["auth", "login"] -> Login
     ["auth", "signup", auth_code] -> Signup(auth_code: auth_code)
+    ["auth", "forgot-password"] -> ForgotPassword
+    ["auth", "forgot-password", token] -> ChangePassword(token)
     ["create-post"] -> CreatePost
     ["user", username] -> UserPage(username)
     ["post", post_id] ->
@@ -429,6 +484,14 @@ fn get_route() -> Route {
       }
     _ -> NotFound
   }
+}
+
+fn request_forgot_password(model: Model) {
+  lustre_http.post(
+    env.get_api_url() <> "/api/auth/forgot-password",
+    json.object([#("email", json.string(model.login_email_username))]),
+    lustre_http.expect_json(message_error_decoder(), ForgotPasswordResponded),
+  )
 }
 
 fn create_auth_code() {
@@ -451,6 +514,18 @@ fn get_auth_code() -> String {
   }
 }
 
+fn get_forgot_password_token() -> String {
+  let uri = case do_get_route() |> uri.parse {
+    Ok(uri) -> uri
+    _ -> panic as "Invalid uri"
+  }
+
+  case uri.path |> uri.path_segments {
+    ["auth", "forgot-password", token] -> token
+    _ -> "1"
+  }
+}
+
 fn get_post_id() -> String {
   let uri = case do_get_route() |> uri.parse {
     Ok(uri) -> uri
@@ -466,9 +541,20 @@ fn get_post_id() -> String {
 pub fn get_inviter(auth_code: String) -> Effect(Msg) {
   let url = env.get_api_url() <> "/api/auth-code/" <> auth_code
   let decoder =
-    dynamic.decode1(AuthCodeResponse, dynamic.field("username", dynamic.string))
+    dynamic.decode1(UsernameResponse, dynamic.field("username", dynamic.string))
 
   lustre_http.get(url, lustre_http.expect_json(decoder, InviterRecieved))
+}
+
+pub fn get_change_password_target(token: String) -> Effect(Msg) {
+  let url = env.get_api_url() <> "/api/auth/forgot-password/" <> token
+  let decoder =
+    dynamic.decode1(UsernameResponse, dynamic.field("username", dynamic.string))
+
+  lustre_http.get(
+    url,
+    lustre_http.expect_json(decoder, ChangePasswordTargetRecieved),
+  )
 }
 
 pub fn get_auth_user() -> Effect(Msg) {
@@ -667,6 +753,16 @@ fn create_post(model: Model) {
   )
 }
 
+fn send_password_change(model: Model) {
+  lustre_http.post(
+    env.get_api_url()
+      <> "/api/auth/change-password/"
+      <> get_forgot_password_token(),
+    json.object([#("password", json.string(model.login_password))]),
+    lustre_http.expect_json(message_error_decoder(), ChangePasswordResponded),
+  )
+}
+
 fn create_comment(model: Model) {
   let post_id = case model.show_post {
     Some(post) -> post.id |> int.to_string
@@ -740,6 +836,8 @@ pub fn view(model: Model) -> Element(Msg) {
           Active, _ -> latest_view(model)
           Login, _ -> login_view(model)
           Signup(auth_code), _ -> signup_view(model, auth_code)
+          ForgotPassword, _ -> forgot_password(model)
+          ChangePassword(_), _ -> change_password(model)
           CreatePost, Some(_) -> create_post_view(model)
           ShowPost(_), _ -> show_post_view(model)
           UserPage(_), Some(_) -> user_view(model)

@@ -7,9 +7,9 @@ import client/state.{
 import env
 import gleam/json
 import gleam/option.{None, Some}
-import lustre/attribute.{class}
+import lustre/attribute.{class, href}
 import lustre/element.{text}
-import lustre/element/html.{button, form, h1, input, label, p, section}
+import lustre/element/html.{a, button, div, form, h1, input, label, p, section}
 import lustre/event
 import lustre_http
 
@@ -27,7 +27,7 @@ pub fn login(model: Model) {
 pub fn login_view(model: Model) {
   section(
     [
-      class("flex flex-col  mx-auto max-w-[450px] w-full gap-4"),
+      class("flex flex-col mx-auto max-w-[450px] w-full gap-4"),
       attribute.id("login_form"),
     ],
     [
@@ -42,6 +42,7 @@ pub fn login_view(model: Model) {
           attribute.id("login_form:email_username"),
           attribute.type_("text"),
           attribute.attribute("autocomplete", "username"),
+          attribute.value(model.login_email_username),
         ]),
         label([attribute.for("login_form:password")], [text("Password")]),
         input([
@@ -51,14 +52,14 @@ pub fn login_view(model: Model) {
           attribute.attribute("type", "password"),
           attribute.attribute("autocomplete", "current-password"),
         ]),
-        button(
-          [
-            button_class(),
-            class("mx-auto"),
-            attribute.attribute("type", "submit"),
-          ],
-          [text("Login")],
-        ),
+        div([class("flex justify-between items-center mt-2")], [
+          button([button_class(), attribute.attribute("type", "submit")], [
+            text("Login"),
+          ]),
+          a([href("/auth/forgot-password"), class("ms-auto text-[#584355]")], [
+            text("Forgot Password"),
+          ]),
+        ]),
         case model.login_error {
           Some(err) ->
             p([class("text-red-500 text-center")], [text("Error: " <> err)])
