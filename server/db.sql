@@ -56,6 +56,29 @@ CREATE TABLE `auth_code` (
   CONSTRAINT `auth_code_creator_id_user_id_fk` FOREIGN KEY (`creator_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
+--
+-- Table structure for table `auth_code`
+--
+DROP TABLE IF EXISTS `user_forgot_password`;
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */
+;
+
+/*!50503 SET character_set_client = utf8mb4 */
+;
+
+CREATE TABLE `user_forgot_password` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `token` varchar(64) NOT NULL,
+  `user_id` bigint NOT NULL,
+  `used` tinyint(1) DEFAULT '0',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `user_forgot_password_user_id_user_id_fk` (`user_id`),
+  CONSTRAINT `user_forgot_password_user_id_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+
 DROP TABLE IF EXISTS `user`;
 
 /*!40101 SET @saved_cs_client     = @@character_set_client */

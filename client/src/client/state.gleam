@@ -7,6 +7,8 @@ pub type Route {
   Active
   Login
   Signup(auth_code: String)
+  ForgotPassword
+  ChangePassword(token: String)
   CreatePost
   UserPage(username: String)
   ShowPost(post_id: Int)
@@ -39,12 +41,14 @@ pub type Model {
     create_comment_parent_id: Option(Int),
     tags: List(Tag),
     invite_link: Option(String),
+    forgot_password_response: Option(Result(String, String)),
+    change_password_target: String,
   )
 }
 
 pub type Msg {
   OnRouteChange(Route)
-  InviterRecieved(Result(AuthCodeResponse, lustre_http.HttpError))
+  InviterRecieved(Result(UsernameResponse, lustre_http.HttpError))
   AuthUserRecieved(Result(AuthUser, lustre_http.HttpError))
   PostsRecieved(Result(GetPostsResponse, lustre_http.HttpError))
   ShowPostRecieved(Result(Post, lustre_http.HttpError))
@@ -106,12 +110,23 @@ pub type Msg {
   CreateAuthCodeResponded(
     resp_result: Result(MessageErrorResponse, lustre_http.HttpError),
   )
+
+  RequestForgotPassword
+  ForgotPasswordResponded(
+    resp_result: Result(MessageErrorResponse, lustre_http.HttpError),
+  )
+  ChangePasswordTargetRecieved(Result(UsernameResponse, lustre_http.HttpError))
+
+  RequestChangePassword
+  ChangePasswordResponded(
+    resp_result: Result(MessageErrorResponse, lustre_http.HttpError),
+  )
 }
 
 // Responses
 
-pub type AuthCodeResponse {
-  AuthCodeResponse(username: String)
+pub type UsernameResponse {
+  UsernameResponse(username: String)
 }
 
 pub type MessageErrorResponse {

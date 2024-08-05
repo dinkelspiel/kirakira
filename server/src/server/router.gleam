@@ -11,6 +11,8 @@ import lustre/element
 import server/db/user
 import server/db/user_session
 import server/response
+import server/routes/auth/change_password
+import server/routes/auth/forgot_password
 import server/routes/auth/login
 import server/routes/auth/logout
 import server/routes/auth/validate
@@ -80,6 +82,12 @@ fn api_routes(req: Request, route_segments: List(String)) -> Response {
     ["api", "auth", "validate"] -> validate.validate(req)
     ["api", "auth", "login"] -> login.login(req)
     ["api", "auth", "logout"] -> logout.logout(req)
+    ["api", "auth", "forgot-password"] ->
+      forgot_password.forgot_password(req, "")
+    ["api", "auth", "forgot-password", token] ->
+      forgot_password.forgot_password(req, token)
+    ["api", "auth", "change-password", token] ->
+      change_password.change_password(req, token)
     _ -> wisp.not_found()
   }
 }
@@ -154,6 +162,8 @@ fn page_routes(req: Request, route_segments: List(String)) -> Response {
         Error(_) -> []
       },
       invite_link: None,
+      forgot_password_response: None,
+      change_password_target: "",
     )
 
   wisp.response(200)
