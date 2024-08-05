@@ -4,6 +4,4 @@ cd ../server
 gleam clean
 cd ../shared
 gleam clean
-cd ../lustre_dev_tools
-gleam clean
 cd ../
