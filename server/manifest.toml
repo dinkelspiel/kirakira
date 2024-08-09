@@ -52,6 +52,7 @@ packages = [
   { name = "ssl_verify_fun", version = "1.1.7", build_tools = ["mix", "rebar3", "make"], requirements = [], otp_app = "ssl_verify_fun", source = "hex", outer_checksum = "FE4C190E8F37401D30167C8C405EDA19469F34577987C76DDE613E838BBC67F8" },
   { name = "thoas", version = "1.2.1", build_tools = ["rebar3"], requirements = [], otp_app = "thoas", source = "hex", outer_checksum = "E38697EDFFD6E91BD12CEA41B155115282630075C2A727E7A6B2947F5408B86A" },
   { name = "unicode_util_compat", version = "0.7.0", build_tools = ["rebar3"], requirements = [], otp_app = "unicode_util_compat", source = "hex", outer_checksum = "25EEE6D67DF61960CF6A794239566599B09E17E668D3700247BC498638152521" },
+  { name = "webls", version = "1.0.0", build_tools = ["gleam"], requirements = ["birl", "gleam_stdlib"], otp_app = "webls", source = "hex", outer_checksum = "1CBFE1537D2204920A2561BA8C7CEDE2AA70F5210F10F0A96F94EEBCC7959A6A" },
   { name = "wisp", version = "0.16.0", build_tools = ["gleam"], requirements = ["exception", "gleam_crypto", "gleam_erlang", "gleam_http", "gleam_json", "gleam_stdlib", "logging", "marceau", "mist", "simplifile"], otp_app = "wisp", source = "hex", outer_checksum = "A13DAD6A84BED78FF5D7656F3B5125086801BE1AF47427A9A759EA8C484345AB" },
   { name = "xmleam", version = "1.1.5", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "xmleam", source = "hex", outer_checksum = "4D69B1074781E9EE335A9C0EBC56C228890940F80E18D6A1B024C2C97BFF52AB" },
 ]
@@ -75,5 +76,6 @@ lustre = { version = ">= 4.3.1 and < 5.0.0" }
 mist = { version = ">= 1.2.0 and < 2.0.0" }
 prng = { version = ">= 3.0.3 and < 4.0.0" }
 shared = { path = "../shared" }
+webls = { version = ">= 1.0.0 and < 2.0.0" }
 wisp = { version = ">= 0.16.0 and < 1.0.0" }
 xmleam = { version = ">= 1.1.5 and < 2.0.0" }
