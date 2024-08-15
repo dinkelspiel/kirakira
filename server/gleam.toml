@@ -32,7 +32,7 @@ lustre = ">= 4.3.1 and < 5.0.0"
 xmleam = ">= 1.1.5 and < 2.0.0"
 birl = ">= 1.7.1 and < 2.0.0"
 gleesend = ">= 1.0.3 and < 2.0.0"
-webls = ">= 1.1.1 and < 2.0.0"
+webls = ">= 1.4.0 and < 2.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"

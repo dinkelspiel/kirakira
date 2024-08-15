@@ -1,16 +1,15 @@
-import webls/robots.{Robot, RobotsConfig}
+import webls/robots
 import wisp.{type Response}
 
 pub fn robots_txt() -> Response {
-  let config =
-    RobotsConfig(sitemap_url: "https://kirakira.keii.dev/sitemap.xml", robots: [
-      Robot(
-        user_agent: "*",
-        disallowed_routes: ["/auth", "/user", "/api"],
-        allowed_routes: ["/"],
-      ),
-    ])
-
   wisp.response(200)
-  |> wisp.string_body(config |> robots.to_string())
+  |> wisp.string_body(
+    robots.config("https://kirakira.keii.dev/sitemap.xml")
+    |> robots.with_config_robot(
+      robots.robot("*")
+      |> robots.with_robot_allowed_route("/")
+      |> robots.with_robot_disallowed_routes(["/auth", "/user", "/api"]),
+    )
+    |> robots.to_string(),
+  )
 }
