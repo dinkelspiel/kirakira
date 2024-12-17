@@ -3,7 +3,7 @@ DROP TABLE IF EXISTS auth_code CASCADE;
 
 DROP TABLE IF EXISTS user_forgot_password CASCADE;
 
-DROP TABLE IF EXISTS user CASCADE;
+DROP TABLE IF EXISTS "user" CASCADE;
 
 DROP TABLE IF EXISTS user_admin CASCADE;
 
@@ -21,6 +21,18 @@ DROP TABLE IF EXISTS tag CASCADE;
 
 DROP TABLE IF EXISTS post_tag CASCADE;
 
+-- Table structure for table `user`
+CREATE TABLE "user" (
+    id BIGSERIAL PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    password VARCHAR(128) NOT NULL,
+    invited_by BIGINT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT NULL,
+    CONSTRAINT user_invited_by_user_id FOREIGN KEY (invited_by) REFERENCES "user" (id) ON DELETE CASCADE
+);
+
 -- Table structure for table `auth_code`
 CREATE TABLE auth_code (
     id BIGSERIAL PRIMARY KEY,
@@ -29,7 +41,7 @@ CREATE TABLE auth_code (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT NULL,
     used BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (creator_id) REFERENCES user(id) ON DELETE CASCADE
+    CONSTRAINT auth_code_creator_id_user_id FOREIGN KEY (creator_id) REFERENCES "user" (id) ON DELETE CASCADE
 );
 
 -- Table structure for table `user_forgot_password`
@@ -40,19 +52,7 @@ CREATE TABLE user_forgot_password (
     used BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT NULL,
-    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
-);
-
--- Table structure for table `user`
-CREATE TABLE user (
-    id BIGSERIAL PRIMARY KEY,
-    username VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    password VARCHAR(128) NOT NULL,
-    invited_by BIGINT,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL DEFAULT NULL,
-    FOREIGN KEY (invited_by) REFERENCES user(id) ON DELETE CASCADE
+    CONSTRAINT user_forgot_password_user_id_user_id FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE
 );
 
 -- Table structure for table `user_admin`
@@ -61,7 +61,7 @@ CREATE TABLE user_admin (
     user_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT NULL,
-    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+    CONSTRAINT user_admin_user_id_user_id FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE
 );
 
 -- Table structure for table `post`
@@ -74,7 +74,7 @@ CREATE TABLE post (
     original_creator BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT NULL,
-    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+    CONSTRAINT post_user_id_user_id FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE
 );
 
 -- Table structure for table `post_comment`
@@ -86,9 +86,9 @@ CREATE TABLE post_comment (
     parent_id BIGINT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT NULL,
-    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
-    FOREIGN KEY (post_id) REFERENCES post(id) ON DELETE CASCADE,
-    FOREIGN KEY (parent_id) REFERENCES post_comment(id) ON DELETE CASCADE
+    CONSTRAINT post_comment_user_id_user_id FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE,
+    CONSTRAINT post_comment_post_id_post_id FOREIGN KEY (post_id) REFERENCES post (id) ON DELETE CASCADE,
+    CONSTRAINT post_comment_parent_id_post_comment_id FOREIGN KEY (parent_id) REFERENCES post_comment (id) ON DELETE CASCADE
 );
 
 CREATE TYPE LIKESTATUS AS ENUM ('like', 'neutral');
@@ -101,8 +101,8 @@ CREATE TABLE user_like_post (
     status LIKESTATUS NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT NULL,
-    FOREIGN KEY (post_id) REFERENCES post(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+    CONSTRAINT user_like_post_post_id_post_id FOREIGN KEY (post_id) REFERENCES post (id) ON DELETE CASCADE,
+    CONSTRAINT user_like_post_user_id_user_id FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE
 );
 
 -- Table structure for table `user_like_post_comment`
@@ -113,8 +113,8 @@ CREATE TABLE user_like_post_comment (
     status LIKESTATUS NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT NULL,
-    FOREIGN KEY (post_comment_id) REFERENCES post_comment(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+    CONSTRAINT user_like_post_comment_post_comment_id_post_comment_id FOREIGN KEY (post_comment_id) REFERENCES post_comment (id) ON DELETE CASCADE,
+    CONSTRAINT user_like_post_commnet_user_id_user_id FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE
 );
 
 -- Table structure for table `user_session`
@@ -124,7 +124,7 @@ CREATE TABLE user_session (
     user_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT NULL,
-    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+    CONSTRAINT user_session_user_id_user_id FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE
 );
 
 CREATE TYPE CATEGORY AS ENUM (
@@ -155,8 +155,8 @@ CREATE TABLE post_tag (
     tag_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT NULL,
-    FOREIGN KEY (post_id) REFERENCES post(id) ON DELETE CASCADE,
-    FOREIGN KEY (tag_id) REFERENCES tag(id) ON DELETE CASCADE
+    CONSTRAINT post_tag_post_id_post_id FOREIGN KEY (post_id) REFERENCES post (id) ON DELETE CASCADE,
+    CONSTRAINT post_tag_tag_id_tag_id FOREIGN KEY (tag_id) REFERENCES tag (id) ON DELETE CASCADE
 );
 
 -- Insert statements for `tag` table
