@@ -1,4 +1,3 @@
-import decode
 import gleam/list
 import gleam/result
 import server/db
@@ -20,10 +19,6 @@ pub fn create_forgot_password(email: String) {
   }
 }
 
-type IdUserId {
-  IdUserId(id: Int, user_id: Int)
-}
-
 pub fn get_user_by_forgot_password(token: String) {
   let forgot_passwords =
     sql.get_user_by_forgot_password(db.get_connection(), token)
@@ -40,11 +35,7 @@ pub fn get_user_by_forgot_password(token: String) {
 
 // Takes in token
 pub fn mark_forgot_password_as_used(token: String) {
-  u.new()
-  |> u.table("user_forgot_password")
-  |> u.sets(["used" |> u.set_true])
-  |> u.where(w.eq(w.col("user_forgot_password.token"), w.string(token)))
-  |> u.to_query
-  |> db.execute_write([gmysql.to_param(1), gmysql.to_param(token)])
+  sql.update_forgot_password_as_used(db.get_connection(), token)
+  |> result.replace(Nil)
   |> result.replace_error("Problem with marking forgot password as used")
 }

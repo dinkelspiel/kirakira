@@ -8,6 +8,7 @@ import gleam/http
 import gleam/int
 import gleam/option.{None, Some}
 import lustre/element
+import server/db/post.{get_post_by_id, get_posts}
 import server/db/user
 import server/db/user_session
 import server/response
@@ -19,7 +20,7 @@ import server/routes/auth/validate
 import server/routes/auth_code
 import server/routes/comment
 import server/routes/comments/likes as post_comment_likes
-import server/routes/post
+import server/routes/post_view.{post as post_view}
 import server/routes/posts
 import server/routes/posts/likes as post_likes
 import server/routes/robots.{robots_txt}
@@ -55,7 +56,7 @@ fn api_routes(req: Request, route_segments: List(String)) -> Response {
     ["api", "posts"] -> posts.posts(req)
     ["api", "posts", post_id] ->
       case int.parse(post_id) {
-        Ok(id) -> post.post(req, id)
+        Ok(id) -> post_view(req, id)
         Error(_) -> response.error("Invalid post_id for post, must be int")
       }
     ["api", "posts", post_id, "likes"] ->
@@ -139,7 +140,7 @@ fn page_routes(req: Request, route_segments: List(String)) -> Response {
       create_post_use_body: False,
       create_post_error: None,
       posts: {
-        case posts.list_posts(req) {
+        case get_posts(req) {
           Ok(posts) -> posts
           Error(_) -> []
         }
@@ -147,7 +148,7 @@ fn page_routes(req: Request, route_segments: List(String)) -> Response {
       show_post: {
         case route {
           ShowPost(id) ->
-            case post.show_post(req, id) {
+            case get_post_by_id(req, id) {
               Ok(post) -> Some(post)
               Error(_) -> None
             }

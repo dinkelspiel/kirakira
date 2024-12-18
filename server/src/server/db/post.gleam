@@ -1,20 +1,14 @@
-import cake/fragment as f
-import cake/join as j
-import cake/select.{type Select}
-import cake/select as s
-import cake/where as w
-import decode
-import gleam/dynamic
+import gleam/float
 import gleam/int
 import gleam/json.{type Json}
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
-import gmysql
-import server/db.{list_to_tuple}
+import server/db
 import server/db/post_comment
 import server/db/user_like
 import shared.{type Post, Post}
+import squirrels/sql
 import wisp.{type Request}
 
 pub type ListPostsDBRow {
@@ -24,108 +18,24 @@ pub type ListPostsDBRow {
     post_href: Option(String),
     post_body: Option(String),
     user_username: String,
-    post_original_creator: Int,
+    post_original_creator: Bool,
     like_count: Int,
     comment_count: Int,
     created_at: Int,
   )
 }
 
-pub fn get_posts_query() {
-  s.new()
-  |> s.selects([
-    s.alias(s.col("post.id"), "post_id"),
-    s.alias(s.col("post.title"), "post_title"),
-    s.alias(s.col("post.href"), "post_href"),
-    s.alias(s.col("post.body"), "post_body"),
-    s.alias(s.col("user.username"), "user_username"),
-    s.alias(s.col("post.original_creator"), "post_original_creator"),
-    s.fragment(f.literal("COUNT(DISTINCT user_like_post.id) AS like_count")),
-    s.fragment(f.literal("COUNT(DISTINCT post_comment.id) AS comment_count")),
-    s.fragment(f.literal("UNIX_TIMESTAMP(post.created_at) AS created_at")),
-  ])
-  |> s.from_table("post")
-  |> s.join(j.left(
-    with: j.table("user_like_post"),
-    on: w.and([
-      w.eq(w.col("post.id"), w.col("user_like_post.post_id")),
-      w.eq(w.col("user_like_post.status"), w.string("like")),
-    ]),
-    alias: "user_like_post",
-  ))
-  |> s.join(j.left(
-    with: j.table("post_comment"),
-    on: w.eq(w.col("post.id"), w.col("post_comment.post_id")),
-    alias: "post_comment",
-  ))
-  |> s.join(j.left(
-    with: j.table("user"),
-    on: w.eq(w.col("post.user_id"), w.col("user.id")),
-    alias: "user",
-  ))
-  |> s.group_by("post.id")
-  |> s.order_by_desc("post.created_at")
-  |> s.limit(25)
-}
-
-pub fn run_post_query(select: Select, params: List(gmysql.Param)) {
-  s.to_query(select)
-  |> db.execute_read(list.append([gmysql.to_param("like")], params), fn(data) {
-    decode.into({
-      use post_id <- decode.parameter
-      use post_title <- decode.parameter
-      use post_href <- decode.parameter
-      use post_body <- decode.parameter
-      use user_username <- decode.parameter
-      use post_original_creator <- decode.parameter
-      use like_count <- decode.parameter
-      use comment_count <- decode.parameter
-      use created_at <- decode.parameter
-
-      ListPostsDBRow(
-        post_id,
-        post_title,
-        post_href,
-        post_body,
-        user_username,
-        post_original_creator,
-        like_count,
-        comment_count,
-        created_at,
-      )
-    })
-    |> decode.field(0, decode.int)
-    |> decode.field(1, decode.string)
-    |> decode.field(2, decode.optional(decode.string))
-    |> decode.field(3, decode.optional(decode.string))
-    |> decode.field(4, decode.string)
-    |> decode.field(5, decode.int)
-    |> decode.field(6, decode.int)
-    |> decode.field(7, decode.int)
-    |> decode.field(8, decode.int)
-    |> decode.from(data |> list_to_tuple)
-  })
-}
-
 pub fn get_tags_for_post(post_id: Int) {
-  let result =
-    s.new()
-    |> s.selects([s.col("tag.id"), s.col("tag.name")])
-    |> s.from_table("post_tag")
-    |> s.join(j.left(
-      with: j.table("tag"),
-      on: w.eq(w.col("tag.id"), w.col("post_tag.tag_id")),
-      alias: "tag",
-    ))
-    |> s.where(w.eq(w.col("post_tag.post_id"), w.int(post_id)))
-    |> s.to_query()
-    |> db.execute_read(
-      [gmysql.to_param(post_id)],
-      dynamic.tuple2(dynamic.int, dynamic.string),
-    )
-
-  case result {
-    Ok(rows) -> Ok(rows |> list.map(fn(a) { a.1 }))
+  case sql.get_tags_by_post_id(db.get_connection(), post_id) {
+    Ok(returned) ->
+      Ok(
+        list.map(returned.rows, fn(a) {
+          case a.name {
+            Some(name) -> name
+            None -> panic
+          }
+        }),
+      )
     Error(_) -> Error("Problem getting tags for " <> post_id |> int.to_string)
   }
 }
@@ -145,7 +55,7 @@ pub fn post_rows_to_post(
       href: row.post_href,
       body: row.post_body,
       username: row.user_username,
-      original_creator: row.post_original_creator > 0,
+      original_creator: row.post_original_creator,
       likes: row.like_count,
       user_like_post: user_like.get_auth_user_likes(
         req,
@@ -196,15 +106,60 @@ pub fn post_to_json(post: Post) -> Json {
   ])
 }
 
+pub fn get_posts(req: Request) -> Result(List(Post), String) {
+  use post_rows <- result.try(
+    sql.get_posts(db.get_connection())
+    |> result.replace_error("Problem getting posts from database"),
+  )
+
+  Ok(post_rows_to_post(
+    req,
+    list.map(post_rows.rows, fn(row) {
+      ListPostsDBRow(
+        post_id: row.id,
+        post_title: row.title,
+        post_href: row.href,
+        post_body: row.body,
+        user_username: case row.username {
+          Some(a) -> a
+          None -> panic
+        },
+        post_original_creator: row.original_creator,
+        like_count: row.like_count,
+        comment_count: row.comment_count,
+        created_at: row.created_at |> float.round,
+      )
+    }),
+    False,
+  ))
+}
+
 pub fn get_post_by_id(req: Request, post_id: Int) -> Result(Post, String) {
   use post_rows <- result.try(
-    get_posts_query()
-    |> s.where(w.eq(w.col("post.id"), w.int(post_id)))
-    |> run_post_query([gmysql.to_param(post_id)])
+    sql.get_post_by_id(db.get_connection(), post_id)
     |> result.replace_error("Problem getting post by id from database"),
   )
 
-  post_rows_to_post(req, post_rows, False)
+  post_rows_to_post(
+    req,
+    list.map(post_rows.rows, fn(row) {
+      ListPostsDBRow(
+        post_id: row.id,
+        post_title: row.title,
+        post_href: row.href,
+        post_body: row.body,
+        user_username: case row.username {
+          Some(a) -> a
+          None -> panic
+        },
+        post_original_creator: row.original_creator,
+        like_count: row.like_count,
+        comment_count: row.comment_count,
+        created_at: row.created_at |> float.round,
+      )
+    }),
+    False,
+  )
   |> list.first
   |> result.replace_error("No post found when getting post by id")
 }
@@ -214,14 +169,30 @@ pub fn get_latest_post_by_user(
   user_id: Int,
 ) -> Result(Post, String) {
   use post_rows <- result.try(
-    get_posts_query()
-    |> s.limit(1)
-    |> s.where(w.eq(w.col("post.user_id"), w.int(user_id)))
-    |> run_post_query([gmysql.to_param(user_id)])
+    sql.get_latest_post_by_user_id(db.get_connection(), user_id)
     |> result.replace_error("Failed gettings posts to database in latest_posts"),
   )
 
-  post_rows_to_post(req, post_rows, False)
+  post_rows_to_post(
+    req,
+    list.map(post_rows.rows, fn(row) {
+      ListPostsDBRow(
+        post_id: row.id,
+        post_title: row.title,
+        post_href: row.href,
+        post_body: row.body,
+        user_username: case row.username {
+          Some(a) -> a
+          None -> panic
+        },
+        post_original_creator: row.original_creator,
+        like_count: row.like_count,
+        comment_count: row.comment_count,
+        created_at: row.created_at |> float.round,
+      )
+    }),
+    False,
+  )
   |> list.first
   |> result.replace_error("No post found in latest_posts")
 }

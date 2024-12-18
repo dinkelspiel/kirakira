@@ -40,7 +40,7 @@ CREATE TABLE auth_code (
     creator_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT NULL,
-    used BOOLEAN DEFAULT FALSE,
+    used BOOLEAN DEFAULT FALSE NOT NULL,
     CONSTRAINT auth_code_creator_id_user_id FOREIGN KEY (creator_id) REFERENCES "user" (id) ON DELETE CASCADE
 );
 
@@ -49,7 +49,7 @@ CREATE TABLE user_forgot_password (
     id BIGSERIAL PRIMARY KEY,
     token VARCHAR(64) NOT NULL,
     user_id BIGINT NOT NULL,
-    used BOOLEAN DEFAULT FALSE,
+    used BOOLEAN DEFAULT FALSE NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT NULL,
     CONSTRAINT user_forgot_password_user_id_user_id FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE
@@ -71,7 +71,7 @@ CREATE TABLE post (
     href VARCHAR(255),
     body TEXT,
     user_id BIGINT NOT NULL,
-    original_creator BOOLEAN DEFAULT FALSE,
+    original_creator BOOLEAN DEFAULT FALSE NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT NULL,
     CONSTRAINT post_user_id_user_id FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE

@@ -1,5 +1,3 @@
-import server/db/user.{get_user_by_email, get_user_by_username}
-import server/db/user_session.{create_user_session}
 import beecrypt
 import gleam/bool
 import gleam/dynamic
@@ -7,6 +5,8 @@ import gleam/http.{Post}
 import gleam/json
 import gleam/result
 import gleam/string
+import server/db/user.{get_user_by_email, get_user_by_username}
+import server/db/user_session.{create_user_session}
 import wisp.{type Request, type Response}
 
 pub fn login(req: Request) -> Response {
@@ -73,7 +73,7 @@ fn do_login(req: Request, body: dynamic.Dynamic) {
     Ok(session_token) ->
       wisp.json_response(
         json.object([#("message", json.string("Logged in"))])
-          |> json.to_string_builder,
+          |> json.to_string_tree,
         201,
       )
       |> wisp.set_cookie(
@@ -86,7 +86,7 @@ fn do_login(req: Request, body: dynamic.Dynamic) {
     Error(error) ->
       wisp.json_response(
         json.object([#("error", json.string(error))])
-          |> json.to_string_builder,
+          |> json.to_string_tree,
         200,
       )
   }

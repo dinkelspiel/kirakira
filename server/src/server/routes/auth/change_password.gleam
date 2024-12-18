@@ -42,7 +42,7 @@ fn do_change_password(req: Request, token: String) {
 
     Ok(
       json.object([#("message", json.string("Updated password"))])
-      |> json.to_string_builder,
+      |> json.to_string_tree,
     )
   }
 

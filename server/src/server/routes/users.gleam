@@ -1,20 +1,17 @@
 import beecrypt
-import cake/insert as i
-import cake/select as s
-import cake/where as w
 import gleam/bool
 import gleam/dynamic
 import gleam/http.{Get, Post}
 import gleam/json
 import gleam/list
-import gleam/regex
+import gleam/regexp
 import gleam/result
 import gleam/string
-import gmysql
 import server/db
 import server/db/auth_code.{type AuthCode, get_auth_code, mark_auth_code_as_used}
 import server/db/user.{get_user_by_username}
 import server/db/user_session.{create_user_session}
+import squirrels/sql
 import wisp.{type Request, type Response}
 
 pub fn users(req: Request) -> Response {
@@ -59,49 +56,26 @@ fn decode_create_user(
 }
 
 fn does_user_with_same_email_or_username_exist(create_user: CreateUser) {
-  case
-    s.new()
-    |> s.selects([s.col("user.email"), s.col("user.username")])
-    |> s.from_table("user")
-    |> s.where(
-      w.or([
-        w.eq(w.col("user.email"), w.string(create_user.email)),
-        w.eq(w.col("user.username"), w.string(create_user.username)),
-      ]),
+  use result <- result.try(
+    sql.get_user_by_email_or_username(
+      db.get_connection(),
+      create_user.email,
+      create_user.username,
     )
-    |> s.to_query
-    |> db.execute_read(
-      [
-        gmysql.to_param(create_user.email),
-        gmysql.to_param(create_user.username),
-      ],
-      dynamic.tuple2(dynamic.string, dynamic.string),
-    )
-  {
-    Ok(users) -> Ok(list.length(users) > 0)
-    Error(_) -> Error("Problem selecting users with same email and username")
-  }
+    |> result.replace_error("User by email or username db call failed"),
+  )
+
+  Ok(list.length(result.rows) > 0)
 }
 
 fn insert_user_to_db(create_user: CreateUser, auth_code: AuthCode) {
-  [
-    i.row([
-      i.string(create_user.username),
-      i.string(create_user.email),
-      i.string(create_user.password),
-      i.int(auth_code.user_id),
-    ]),
-  ]
-  |> i.from_values(table_name: "user", columns: [
-    "username", "email", "password", "invited_by",
-  ])
-  |> i.to_query
-  |> db.execute_write([
-    gmysql.to_param(create_user.username),
-    gmysql.to_param(create_user.email),
-    gmysql.to_param(create_user.password),
-    gmysql.to_param(auth_code.user_id),
-  ])
+  sql.create_user(
+    db.get_connection(),
+    create_user.username,
+    create_user.email,
+    create_user.password,
+    auth_code.user_id,
+  )
 }
 
 fn create_user(req: Request, body: dynamic.Dynamic) {
@@ -135,10 +109,10 @@ fn create_user(req: Request, body: dynamic.Dynamic) {
     use <- bool.guard(
       when: {
         let assert Ok(re) =
-          regex.from_string(
+          regexp.from_string(
             "(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])",
           )
-        !regex.check(with: re, content: user.email)
+        !regexp.check(with: re, content: user.email)
       },
       return: Error("Invalid email address"),
     )
@@ -161,7 +135,7 @@ fn create_user(req: Request, body: dynamic.Dynamic) {
     Ok(session_token) ->
       wisp.json_response(
         json.object([#("message", json.string("Created account"))])
-          |> json.to_string_builder,
+          |> json.to_string_tree,
         201,
       )
       |> wisp.set_cookie(
@@ -174,7 +148,7 @@ fn create_user(req: Request, body: dynamic.Dynamic) {
     Error(error) ->
       wisp.json_response(
         json.object([#("error", json.string(error))])
-          |> json.to_string_builder,
+          |> json.to_string_tree,
         200,
       )
   }
