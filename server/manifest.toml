@@ -4,7 +4,6 @@
 packages = [
   { name = "argv", version = "1.0.2", build_tools = ["gleam"], requirements = [], otp_app = "argv", source = "hex", outer_checksum = "BA1FF0929525DEBA1CE67256E5ADF77A7CDDFE729E3E3F57A5BDCAA031DED09D" },
   { name = "backoff", version = "1.1.6", build_tools = ["rebar3"], requirements = [], otp_app = "backoff", source = "hex", outer_checksum = "CF0CFFF8995FB20562F822E5CC47D8CCF664C5ECDC26A684CBE85C225F9D7C39" },
-  { name = "based", version = "3.0.1", build_tools = ["gleam"], requirements = ["gleam_erlang", "gleam_otp", "gleam_stdlib"], otp_app = "based", source = "hex", outer_checksum = "67A90B910E6FE7D7539FC4C441FF95274447F802E91309076261B44CECBF8843" },
   { name = "bcrypt", version = "1.2.2", build_tools = ["rebar3"], requirements = ["poolboy"], otp_app = "bcrypt", source = "hex", outer_checksum = "6428D68BB2608490E150BE406A7AB75B5BCE4A2B5A3B0C3F36A12E367A141561" },
   { name = "beecrypt", version = "0.3.1", build_tools = ["gleam"], requirements = ["bcrypt", "gleam_crypto", "gleam_erlang", "gleam_stdlib"], otp_app = "beecrypt", source = "hex", outer_checksum = "9698221A179C4D823DE2F00954D7A10BBC2B577B6C40A269BD676C308A788C15" },
   { name = "birl", version = "1.7.1", build_tools = ["gleam"], requirements = ["gleam_stdlib", "ranger"], otp_app = "birl", source = "hex", outer_checksum = "5C66647D62BCB11FE327E7A6024907C4A17954EF22865FE0940B54A852446D01" },
@@ -29,12 +28,12 @@ packages = [
   { name = "gleam_javascript", version = "0.11.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleam_javascript", source = "hex", outer_checksum = "483631D3001FCE8EB12ADEAD5E1B808440038E96F93DA7A32D326C82F480C0B2" },
   { name = "gleam_json", version = "1.0.1", build_tools = ["gleam"], requirements = ["gleam_stdlib", "thoas"], otp_app = "gleam_json", source = "hex", outer_checksum = "9063D14D25406326C0255BDA0021541E797D8A7A12573D849462CAFED459F6EB" },
   { name = "gleam_otp", version = "0.10.0", build_tools = ["gleam"], requirements = ["gleam_erlang", "gleam_stdlib"], otp_app = "gleam_otp", source = "hex", outer_checksum = "0B04FE915ACECE539B317F9652CAADBBC0F000184D586AAAF2D94C100945D72B" },
+  { name = "gleam_pgo", version = "0.13.0", build_tools = ["gleam"], requirements = ["gleam_stdlib", "pgo"], otp_app = "gleam_pgo", source = "hex", outer_checksum = "6A1E7F3E717C077788254871E4EF4A8DFF58FEC07D7FA7C7702C2CCF66095AC8" },
   { name = "gleam_stdlib", version = "0.39.0", build_tools = ["gleam"], requirements = [], otp_app = "gleam_stdlib", source = "hex", outer_checksum = "2D7DE885A6EA7F1D5015D1698920C9BAF7241102836CE0C3837A4F160128A9C4" },
   { name = "gleesend", version = "1.0.3", build_tools = ["gleam"], requirements = ["gleam_hackney", "gleam_http", "gleam_json", "gleam_stdlib"], otp_app = "gleesend", source = "hex", outer_checksum = "808360D398504C3A63C0161500B11DABB67CF0514367DEAB804D8AA09CEBAA9F" },
   { name = "gleeunit", version = "1.2.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleeunit", source = "hex", outer_checksum = "F7A7228925D3EE7D0813C922E062BFD6D7E9310F0BEE585D3A42F3307E3CFD13" },
   { name = "glenv", version = "0.4.0", build_tools = ["gleam"], requirements = ["decode", "envoy", "gleam_stdlib"], otp_app = "glenv", source = "hex", outer_checksum = "46164B9FFEB08927FD2CEBD96C3AFBE082AD5CC2C6F2FC4A78EFDA9EB61E3510" },
   { name = "glisten", version = "2.0.0", build_tools = ["gleam"], requirements = ["gleam_erlang", "gleam_otp", "gleam_stdlib"], otp_app = "glisten", source = "hex", outer_checksum = "CF3A9383E9BA4A8CBAF2F7B799716290D02F2AC34E7A77556B49376B662B9314" },
-  { name = "gmysql", version = "1.4.0", build_tools = ["gleam"], requirements = ["based", "gleam_erlang", "gleam_otp", "gleam_stdlib", "mysql"], otp_app = "gmysql", source = "hex", outer_checksum = "BEBE389DE4350637A5F69D1A857FB1AAF1DFDEC94E8A66C4CAD2FBC7A8D2D9AD" },
   { name = "gramps", version = "2.0.3", build_tools = ["gleam"], requirements = ["gleam_crypto", "gleam_erlang", "gleam_http", "gleam_stdlib"], otp_app = "gramps", source = "hex", outer_checksum = "3CCAA6E081225180D95C79679D383BBF51C8D1FDC1B84DA1DA444F628C373793" },
   { name = "hackney", version = "1.20.1", build_tools = ["rebar3"], requirements = ["certifi", "idna", "metrics", "mimerl", "parse_trans", "ssl_verify_fun", "unicode_util_compat"], otp_app = "hackney", source = "hex", outer_checksum = "FE9094E5F1A2A2C0A7D10918FEE36BFEC0EC2A979994CFF8CFE8058CD9AF38E3" },
   { name = "hpack_erl", version = "0.3.0", build_tools = ["rebar3"], requirements = [], otp_app = "hpack", source = "hex", outer_checksum = "D6137D7079169D8C485C6962DFE261AF5B9EF60FBC557344511C1E65E3D95FB0" },
@@ -49,7 +48,6 @@ packages = [
   { name = "mist", version = "1.2.0", build_tools = ["gleam"], requirements = ["birl", "gleam_erlang", "gleam_http", "gleam_otp", "gleam_stdlib", "glisten", "gramps", "hpack_erl", "logging"], otp_app = "mist", source = "hex", outer_checksum = "109B4D64E68C104CC23BB3CC5441ECD479DD7444889DA01113B75C6AF0F0E17B" },
   { name = "modem", version = "2.0.1", build_tools = ["gleam"], requirements = ["gleam_stdlib", "lustre"], otp_app = "modem", source = "hex", outer_checksum = "B446119A85DC9C31FEA0DCB204072E40356CB246C9D091CBBF2E4678CDB05A2D" },
   { name = "mug", version = "1.1.1", build_tools = ["gleam"], requirements = ["gleam_erlang", "gleam_stdlib"], otp_app = "mug", source = "hex", outer_checksum = "C381913DB8389BBAABA856826CB858D1C7F63673E4932FC9499958395FA6B2E9" },
-  { name = "mysql", version = "1.8.0", build_tools = ["make", "rebar3", "mix"], requirements = [], otp_app = "mysql", source = "hex", outer_checksum = "D473C479C19E5CDE20237458EEAD6673C3C00E0EF84AFD30615AEBBB67FEE7B3" },
   { name = "opentelemetry_api", version = "1.4.0", build_tools = ["rebar3", "mix"], requirements = [], otp_app = "opentelemetry_api", source = "hex", outer_checksum = "3DFBBFAA2C2ED3121C5C483162836C4F9027DEF469C41578AF5EF32589FCFC58" },
   { name = "parse_trans", version = "3.4.1", build_tools = ["rebar3"], requirements = [], otp_app = "parse_trans", source = "hex", outer_checksum = "620A406CE75DADA827B82E453C19CF06776BE266F5A67CFF34E1EF2CBB60E49A" },
   { name = "pg_types", version = "0.4.0", build_tools = ["rebar3"], requirements = [], otp_app = "pg_types", source = "hex", outer_checksum = "B02EFA785CAECECF9702C681C80A9CA12A39F9161A846CE17B01FB20AEEED7EB" },
@@ -80,11 +78,11 @@ decode = { version = ">= 0.2.0 and < 1.0.0" }
 gleam_erlang = { version = ">= 0.25.0 and < 1.0.0" }
 gleam_http = { version = ">= 3.6.0 and < 4.0.0" }
 gleam_json = { version = ">= 1.0.1 and < 2.0.0" }
+gleam_pgo = { version = ">= 0.13.0 and < 1.0.0" }
 gleam_stdlib = { version = ">= 0.39.0 and < 1.0.0" }
 gleesend = { version = ">= 1.0.3 and < 2.0.0" }
 gleeunit = { version = ">= 1.0.0 and < 2.0.0" }
 glenv = { version = ">= 0.4.0 and < 1.0.0" }
-gmysql = { version = ">= 1.4.0 and < 2.0.0" }
 lustre = { version = ">= 4.3.1 and < 5.0.0" }
 mist = { version = ">= 1.2.0 and < 2.0.0" }
 prng = { version = ">= 3.0.3 and < 4.0.0" }

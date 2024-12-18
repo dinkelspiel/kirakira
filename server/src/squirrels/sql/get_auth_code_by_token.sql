@@ -5,4 +5,5 @@ SELECT
     auth_code.used
 FROM
     auth_code
-WHERE auth_code.token = $1
+WHERE
+    auth_code.token = $1

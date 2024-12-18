@@ -1,14 +1,11 @@
-import server/db
-import server/db/user_session
-import cake/insert as i
-import cake/select as s
-import cake/update as u
-import cake/where as w
 import decode
 import gleam/http.{Post}
 import gleam/list
 import gleam/result
 import gmysql
+import server/db
+import server/db/user_session
+import squirrels/sql
 import wisp.{type Request}
 
 pub type UserLike {
@@ -40,56 +37,10 @@ fn col_to_string(col: UserLikeColumn) {
 
 pub fn get_user_likes(user_id: Int, column_id: Int, col: UserLikeColumn) {
   use user_like_posts <- result.try(
-    s.new()
-    |> s.selects([
-      s.col("user_like_" <> col_to_string(col) <> ".id"),
-      s.col("user_like_" <> col_to_string(col) <> ".user_id"),
-      s.col(
-        "user_like_" <> col_to_string(col) <> "." <> col_to_string(col) <> "_id",
-      ),
-      s.col("user_like_" <> col_to_string(col) <> ".status"),
-    ])
-    |> s.from_table("user_like_" <> col_to_string(col) <> "")
-    |> s.where(
-      w.and([
-        w.eq(
-          w.col("user_like_" <> col_to_string(col) <> ".user_id"),
-          w.int(user_id),
-        ),
-        w.eq(
-          w.col(
-            "user_like_"
-            <> col_to_string(col)
-            <> "."
-            <> col_to_string(col)
-            <> "_id",
-          ),
-          w.int(column_id),
-        ),
-      ]),
-    )
-    |> s.to_query
-    |> db.execute_read(
-      [gmysql.to_param(user_id), gmysql.to_param(column_id)],
-      fn(data) {
-        decode.into({
-          use id <- decode.parameter
-          use user_id <- decode.parameter
-          use column_id <- decode.parameter
-          use status <- decode.parameter
-
-          UserLike(id, user_id, column_id, column: col, status: case status {
-            "like" -> Like
-            _ -> Neutral
-          })
-        })
-        |> decode.field(0, decode.int)
-        |> decode.field(1, decode.int)
-        |> decode.field(2, decode.int)
-        |> decode.field(3, decode.string)
-        |> decode.from(data |> db.list_to_tuple)
-      },
-    )
+    case col {
+      Post -> sql.get_user_post_likes()
+      PostComment -> sql.get_user_post_comment_likes()
+    }
     |> result.replace_error(
       "Problem getting and decoding user_like_post from db",
     ),
