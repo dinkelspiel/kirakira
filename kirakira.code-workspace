@@ -1,14 +1,32 @@
 {
   "folders": [
-	{
-		"path": "server"
-	},
-	{
-		"path": "client"
-	},
-	{
-		"path": "shared"
-	}
-],
+    {
+      "path": "server"
+    },
+    {
+      "path": "client"
+    },
+    {
+      "path": "shared"
+    },
+    {
+      "path": "birl"
+    },
+    {
+      "path": "gramps"
+    },
+    {
+      "path": "mist"
+    },
+    {
+      "path": "wisp"
+    },
+    {
+      "path": "cors-builder"
+    },
+    {
+      "path": "xmleam"
+    }
+  ],
   "settings": {}
 }

@@ -1,16 +1,16 @@
-import server/db
-import squirrels
 import gleam/dynamic
 import gleam/list
 import gleam/result
 import gmysql
+import server/db
+import squirrels
 
 pub type AuthCode {
   AuthCode(id: Int, token: String, user_id: Int, used: Bool)
 }
 
 pub fn get_auth_code(auth_code: String) {
-  let auth_code_result =
+  // let auth_code_result =
 
   use auth_code <- result.try(auth_code_result)
 

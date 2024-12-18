@@ -1,6 +1,6 @@
 import decode
 import gleam/option.{type Option}
-import gleam/pgo
+import pog
 
 /// A row you get from running the `get_user_by_username` query
 /// defined in `./src/squirrels/sql/get_user_by_username.sql`.
@@ -56,7 +56,7 @@ FROM
     \"user\"
 WHERE
     \"user\".username = $1"
-  |> pgo.execute(db, [pgo.text(arg_1)], decode.from(decoder, _))
+  |> pog.execute(db, [pog.text(arg_1)], decode.from(decoder, _))
 }
 
 /// A row you get from running the `get_user_id_from_session` query
