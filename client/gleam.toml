@@ -17,12 +17,11 @@ version = "1.0.0"
 gleam_stdlib = ">= 0.34.0 and < 2.0.0"
 lustre = ">= 4.3.1 and < 5.0.0"
 modem = ">= 2.0.0 and < 3.0.0"
-falcon = ">= 1.1.0 and < 2.0.0"
 lustre_http = ">= 0.5.2 and < 1.0.0"
-birl = ">= 1.7.1 and < 2.0.0"
 decode = ">= 0.2.0 and < 1.0.0"
 shared = { path = "../shared" }
-gleam_json = ">= 1.0.1 and < 2.0.0"
+gleam_json = ">= 2.0.0 and < 3.0.0"
+birl = { path = "../birl" }
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"

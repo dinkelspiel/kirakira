@@ -1,8 +1,5 @@
 import server/db
-import cake/insert as i
-import cake/select as s
-import cake/update as u
-import cake/where as w
+import squirrels
 import gleam/dynamic
 import gleam/list
 import gleam/result
@@ -13,25 +10,7 @@ pub type AuthCode {
 }
 
 pub fn get_auth_code(auth_code: String) {
-  let auth_code_result = case
-    s.new()
-    |> s.selects([
-      s.col("auth_code.id"),
-      s.col("auth_code.token"),
-      s.col("auth_code.creator_id"),
-      s.col("auth_code.used"),
-    ])
-    |> s.from_table("auth_code")
-    |> s.where(w.eq(w.col("auth_code.token"), w.string(auth_code)))
-    |> s.to_query
-    |> db.execute_read(
-      [gmysql.to_param(auth_code)],
-      dynamic.tuple4(dynamic.int, dynamic.string, dynamic.int, dynamic.int),
-    )
-  {
-    Ok(auth_codes) -> Ok(list.first(auth_codes))
-    Error(_) -> Error("Problem getting auth code")
-  }
+  let auth_code_result =
 
   use auth_code <- result.try(auth_code_result)
 

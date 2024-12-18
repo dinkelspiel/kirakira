@@ -91,14 +91,14 @@ CREATE TABLE post_comment (
     CONSTRAINT post_comment_parent_id_post_comment_id FOREIGN KEY (parent_id) REFERENCES post_comment (id) ON DELETE CASCADE
 );
 
-CREATE TYPE likestatus AS ENUM ('like', 'neutral');
+CREATE TYPE LIKESTATUS AS ENUM ('like', 'neutral');
 
 -- Table structure for table `user_like_post`
 CREATE TABLE user_like_post (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     post_id BIGINT NOT NULL,
-    status likestatus NOT NULL,
+    status LIKESTATUS NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT NULL,
     CONSTRAINT user_like_post_post_id_post_id FOREIGN KEY (post_id) REFERENCES post (id) ON DELETE CASCADE,
