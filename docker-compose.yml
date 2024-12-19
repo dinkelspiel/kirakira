@@ -32,10 +32,20 @@ services:
       - PMA_HOST=mysql
       - PMA_USER=root
       - PMA_PASSWORD=kirakira
-  server:
+  dev:
     build:
       context: .
-      dockerfile: ./prod.Dockerfile
+      dockerfile: ./Dockerfile.dev
+    ports:
+      - "8001:8001"
+    volumes:
+      - type: bind
+        source: ./
+        target: /app
+  prod:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.prod
     ports:
       - "8001:8001"
     volumes:

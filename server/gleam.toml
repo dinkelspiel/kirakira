@@ -25,18 +25,14 @@ webls = ">= 1.4.0 and < 2.0.0"
 wisp = { path = "../wisp" }
 gleam_erlang = ">= 0.25.0 and < 1.0.0"
 prng = ">= 3.0.3 and < 4.0.0"
-# cors_builder = ">= 2.0.0 and < 3.0.0"
 decode = ">= 0.3.0 and < 1.0.0"
-birl = { path = "../birl" }
 cors_builder = { path = "../cors-builder" }
-# gramps = { path = "../gramps" }
-mist = { path = "../mist" }
 gleam_stdlib = ">= 0.48.0 and < 1.0.0"
 gleam_json = ">= 2.0.0 and < 3.0.0"
 pog = ">= 1.1.0 and < 2.0.0"
 gleam_httpc = ">= 4.0.0 and < 5.0.0"
 gleam_regexp = ">= 1.0.0 and < 2.0.0"
-
+birl = ">= 1.8.0 and < 2.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
