@@ -18,7 +18,9 @@ pub type PostSitemap {
 }
 
 pub fn get_post_sitemap() {
-  let assert Ok(posts) = sql.get_posts_unlimited(db.get_connection())
+  let assert Ok(db_connection) = db.get_connection()
+
+  let assert Ok(posts) = sql.get_posts_unlimited(db_connection)
 
   list.map(posts.rows, fn(p) {
     PostSitemap(
@@ -41,7 +43,9 @@ pub fn get_post_sitemap() {
 }
 
 fn get_comments_for_sitemap(post_id: Int) {
-  case sql.get_comments_for_sitemap(db.get_connection(), post_id) {
+  let assert Ok(db_connection) = db.get_connection()
+
+  case sql.get_comments_for_sitemap(db_connection, post_id) {
     Ok(result) -> result.rows
     Error(_) -> []
   }

@@ -46,7 +46,7 @@ fn create_forgot_password(req: Request) {
       request.email,
     ))
 
-    let env = get_env()
+    use env <- result.try(get_env())
 
     let resend_client = gleesend.Resend(api_key: env.resend_api_key)
 

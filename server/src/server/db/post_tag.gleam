@@ -4,20 +4,26 @@ import server/db
 import squirrels/sql
 
 pub fn create_post_tag(post_id: Int, tag_id: Int) {
-  case get_post_tag(post_id, tag_id) {
-    Ok(_) -> {
-      Nil
-    }
-    Error(_) -> {
-      let _ = sql.create_post_tag(db.get_connection(), post_id, tag_id)
-      Nil
-    }
+  case db.get_connection() {
+    Ok(db_connection) ->
+      case get_post_tag(post_id, tag_id) {
+        Ok(_) -> {
+          Nil
+        }
+        Error(_) -> {
+          let _ = sql.create_post_tag(db_connection, post_id, tag_id)
+          Nil
+        }
+      }
+    Error(_) -> Nil
   }
 }
 
 pub fn get_post_tag(post_id: Int, tag_id: Int) {
+  use db_connection <- result.try(db.get_connection())
+
   use post_tag_rows <- result.try(
-    sql.get_post_tags(db.get_connection(), post_id, tag_id)
+    sql.get_post_tags(db_connection, post_id, tag_id)
     |> result.replace_error("Error getting post_tags from database"),
   )
 

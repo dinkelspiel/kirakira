@@ -22,10 +22,12 @@ pub type UserLikeColumn {
 }
 
 pub fn get_user_likes(user_id: Int, column_id: Int, column: UserLikeColumn) {
+  use db_connection <- result.try(db.get_connection())
+
   case column {
     Post -> {
       use user_like_posts <- result.try(
-        sql.get_user_post_likes(db.get_connection(), user_id, column_id)
+        sql.get_user_post_likes(db_connection, user_id, column_id)
         |> result.replace_error(
           "Problem getting and decoding user_like_post from db",
         ),
@@ -39,7 +41,7 @@ pub fn get_user_likes(user_id: Int, column_id: Int, column: UserLikeColumn) {
     }
     PostComment -> {
       use user_like_post_comments <- result.try(
-        sql.get_user_post_comment_likes(db.get_connection(), user_id, column_id)
+        sql.get_user_post_comment_likes(db_connection, user_id, column_id)
         |> result.replace_error(
           "Problem getting and decoding user_like_post_comment from db",
         ),
@@ -59,14 +61,12 @@ pub fn set_status_for_user_like(
   status: sql.Likestatus,
   column: UserLikeColumn,
 ) {
+  use db_connection <- result.try(db.get_connection())
+
   case column {
     Post -> {
       case
-        sql.update_user_like_post_status(
-          db.get_connection(),
-          status,
-          user_like_id,
-        )
+        sql.update_user_like_post_status(db_connection, status, user_like_id)
       {
         Ok(_) -> Ok(Nil)
         Error(_) -> Error("Problem setting status for user_like_post")
@@ -75,7 +75,7 @@ pub fn set_status_for_user_like(
     PostComment -> {
       case
         sql.update_user_like_post_comment_status(
-          db.get_connection(),
+          db_connection,
           status,
           user_like_id,
         )
@@ -88,19 +88,16 @@ pub fn set_status_for_user_like(
 }
 
 pub fn create_user_like(user_id: Int, column_id: Int, column: UserLikeColumn) {
+  use db_connection <- result.try(db.get_connection())
+
   case column {
     Post ->
-      sql.create_user_like_post(
-        db.get_connection(),
-        user_id,
-        column_id,
-        sql.Like,
-      )
+      sql.create_user_like_post(db_connection, user_id, column_id, sql.Like)
       |> result.replace(Nil)
       |> result.replace_error("Error creating user_like_post")
     PostComment ->
       sql.create_user_like_post_comment(
-        db.get_connection(),
+        db_connection,
         user_id,
         column_id,
         sql.Like,

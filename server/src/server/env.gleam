@@ -52,7 +52,24 @@ pub fn get_env() {
     |> decode.field("RESEND_API_KEY", decode.string)
     |> decode.field("RESEND_EMAIL", decode.string)
 
-  let assert Ok(env) = glenv.load(decoder, definitions)
-
-  env
+  case glenv.load(decoder, definitions) {
+    Ok(env) -> Ok(env)
+    Error(err) ->
+      case err {
+        glenv.DefinitionMismatchError(_) ->
+          Error("Definition mismatch for env in server environment")
+        glenv.NotFoundError(key) ->
+          Error(
+            "The env key '"
+            <> key
+            <> "' was not found in the server environment",
+          )
+        glenv.ParseError(key, _) ->
+          Error(
+            "The env key '"
+            <> key
+            <> "' was of the wrong type in the server environment",
+          )
+      }
+  }
 }

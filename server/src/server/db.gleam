@@ -1,11 +1,12 @@
 import gleam/option.{Some}
+import gleam/result
 import pog
 import server/env.{get_env}
 
 pub fn get_connection() {
-  let env = get_env()
+  use env <- result.try(get_env())
 
-  pog.connect(
+  Ok(pog.connect(
     pog.Config(
       ..pog.default_config(),
       host: env.db_host,
@@ -15,5 +16,5 @@ pub fn get_connection() {
       password: Some(env.db_password),
       pool_size: 15,
     ),
-  )
+  ))
 }

@@ -8,7 +8,9 @@ pub type AuthCode {
 }
 
 pub fn get_auth_code(token: String) {
-  let auth_code_result = sql.get_auth_code_by_token(db.get_connection(), token)
+  use db_connection <- result.try(db.get_connection())
+
+  let auth_code_result = sql.get_auth_code_by_token(db_connection, token)
 
   use auth_code <- result.try(
     auth_code_result
@@ -28,12 +30,16 @@ pub fn get_auth_code(token: String) {
 }
 
 pub fn mark_auth_code_as_used(auth_code: AuthCode) {
-  sql.update_auth_code_as_used(db.get_connection(), auth_code.id)
+  use db_connection <- result.try(db.get_connection())
+
+  sql.update_auth_code_as_used(db_connection, auth_code.id)
   |> result.replace_error("Problem with marking auth code as used")
 }
 
 pub fn create_auth_code(token: String, user_id: Int) {
-  case sql.create_auth_code(db.get_connection(), token, user_id) {
+  use db_connection <- result.try(db.get_connection())
+
+  case sql.create_auth_code(db_connection, token, user_id) {
     Ok(_) -> Ok(Nil)
     Error(_) -> Error("Error creating auth_code")
   }

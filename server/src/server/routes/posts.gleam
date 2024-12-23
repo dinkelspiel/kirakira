@@ -81,21 +81,27 @@ fn does_post_with_href_exist(post: CreatePost) {
     return: False,
   )
 
-  case post.href {
-    Some(href) ->
-      case sql.get_post_by_href(db.get_connection(), href) {
-        Ok(posts) -> !list.is_empty(posts.rows)
-        Error(_) -> False
+  case db.get_connection() {
+    Ok(db_connection) ->
+      case post.href {
+        Some(href) ->
+          case sql.get_post_by_href(db_connection, href) {
+            Ok(posts) -> !list.is_empty(posts.rows)
+            Error(_) -> False
+          }
+        None -> False
       }
-    None -> False
+    Error(_) -> False
   }
 }
 
 fn insert_post_to_db(req: Request, post: CreatePost, user_id: Int) {
+  use db_connection <- result.try(db.get_connection())
+
   let _ = case post.href {
     Some(href) ->
       sql.create_post_with_href(
-        db.get_connection(),
+        db_connection,
         post.title,
         href,
         user_id,
@@ -105,7 +111,7 @@ fn insert_post_to_db(req: Request, post: CreatePost, user_id: Int) {
       case post.body {
         Some(body) ->
           sql.create_post_with_body(
-            db.get_connection(),
+            db_connection,
             post.title,
             body,
             user_id,

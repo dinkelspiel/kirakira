@@ -10,8 +10,10 @@ pub type TagDbRow {
 }
 
 pub fn get_tags() {
+  use db_connection <- result.try(db.get_connection())
+
   use results <- result.try(
-    sql.get_tags(db.get_connection())
+    sql.get_tags(db_connection)
     |> result.replace_error("Failed getting tags from db"),
   )
 
@@ -47,8 +49,10 @@ pub fn tag_to_json(tag: Tag) -> Json {
 }
 
 pub fn get_tag_by_id(tag_id: Int) -> Result(Tag, String) {
+  use db_connection <- result.try(db.get_connection())
+
   use tags <- result.try(
-    sql.get_tags_by_id(db.get_connection(), tag_id)
+    sql.get_tags_by_id(db_connection, tag_id)
     |> result.replace_error("Problem getting tag by id from database"),
   )
 

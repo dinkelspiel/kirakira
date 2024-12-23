@@ -26,7 +26,8 @@ pub type ListPostsDBRow {
 }
 
 pub fn get_tags_for_post(post_id: Int) {
-  case sql.get_tags_by_post_id(db.get_connection(), post_id) {
+  use db_connection <- result.try(db.get_connection())
+  case sql.get_tags_by_post_id(db_connection, post_id) {
     Ok(returned) ->
       Ok(
         list.map(returned.rows, fn(a) {
@@ -107,8 +108,10 @@ pub fn post_to_json(post: Post) -> Json {
 }
 
 pub fn get_posts(req: Request) -> Result(List(Post), String) {
+  use db_connection <- result.try(db.get_connection())
+
   use post_rows <- result.try(
-    sql.get_posts(db.get_connection())
+    sql.get_posts(db_connection)
     |> result.replace_error("Problem getting posts from database"),
   )
 
@@ -135,8 +138,10 @@ pub fn get_posts(req: Request) -> Result(List(Post), String) {
 }
 
 pub fn get_post_by_id(req: Request, post_id: Int) -> Result(Post, String) {
+  use db_connection <- result.try(db.get_connection())
+
   use post_rows <- result.try(
-    sql.get_post_by_id(db.get_connection(), post_id)
+    sql.get_post_by_id(db_connection, post_id)
     |> result.replace_error("Problem getting post by id from database"),
   )
 
@@ -168,8 +173,10 @@ pub fn get_latest_post_by_user(
   req: Request,
   user_id: Int,
 ) -> Result(Post, String) {
+  use db_connection <- result.try(db.get_connection())
+
   use post_rows <- result.try(
-    sql.get_latest_post_by_user_id(db.get_connection(), user_id)
+    sql.get_latest_post_by_user_id(db_connection, user_id)
     |> result.replace_error("Failed gettings posts to database in latest_posts"),
   )
 

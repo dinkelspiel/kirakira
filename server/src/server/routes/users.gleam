@@ -56,9 +56,11 @@ fn decode_create_user(
 }
 
 fn does_user_with_same_email_or_username_exist(create_user: CreateUser) {
+  use db_connection <- result.try(db.get_connection())
+
   use result <- result.try(
     sql.get_user_by_email_or_username(
-      db.get_connection(),
+      db_connection,
       create_user.email,
       create_user.username,
     )
@@ -69,13 +71,16 @@ fn does_user_with_same_email_or_username_exist(create_user: CreateUser) {
 }
 
 fn insert_user_to_db(create_user: CreateUser, auth_code: AuthCode) {
+  use db_connection <- result.try(db.get_connection())
+
   sql.create_user(
-    db.get_connection(),
+    db_connection,
     create_user.username,
     create_user.email,
     create_user.password,
     auth_code.user_id,
   )
+  |> result.replace_error("Error inserting user to db")
 }
 
 fn create_user(req: Request, body: dynamic.Dynamic) {

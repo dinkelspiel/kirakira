@@ -36,14 +36,12 @@ fn decode_create_comment(
 }
 
 fn does_parent_exist_in_post(comment: CreateComment, post_id: Int) {
+  use db_connection <- result.try(db.get_connection())
+
   case comment.parent_id {
     Some(parent_id) ->
       case
-        sql.get_post_comment_parent_in_post(
-          db.get_connection(),
-          post_id,
-          parent_id,
-        )
+        sql.get_post_comment_parent_in_post(db_connection, post_id, parent_id)
       {
         Ok(comments) -> Ok(!list.is_empty(comments.rows))
         Error(_) -> Error("Problem selecting comments in post with parent_id")
@@ -54,22 +52,26 @@ fn does_parent_exist_in_post(comment: CreateComment, post_id: Int) {
 }
 
 fn insert_comment_to_db(comment: CreateComment, user_id: Int, post_id: Int) {
+  use db_connection <- result.try(db.get_connection())
+
   case comment.parent_id {
     Some(parent_id) ->
       sql.create_post_comment(
-        db.get_connection(),
+        db_connection,
         comment.body,
         user_id,
         post_id,
         parent_id,
       )
+      |> result.replace_error("Problem inserting post to database")
     None ->
       sql.create_post_comment_no_parent(
-        db.get_connection(),
+        db_connection,
         comment.body,
         user_id,
         post_id,
       )
+      |> result.replace_error("Problem inserting post to database")
   }
 }
 

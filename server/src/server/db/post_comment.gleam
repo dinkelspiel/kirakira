@@ -83,10 +83,12 @@ pub type PostCommentDBRow {
 // }
 
 pub fn get_post_comments(req: Request, post_id: Int) {
-  use pog.Returned(_, rows) <- result.try(sql.get_post_comments_by_post_id(
-    db.get_connection(),
-    post_id,
-  ))
+  use db_connection <- result.try(db.get_connection())
+
+  use pog.Returned(_, rows) <- result.try(
+    sql.get_post_comments_by_post_id(db_connection, post_id)
+    |> result.replace_error("Database query error"),
+  )
 
   Ok(post_comments_rows_to_post_comments(
     req,
@@ -159,8 +161,10 @@ pub fn get_post_comment_by_id(
   req: Request,
   post_comment_id: Int,
 ) -> Result(PostComment, String) {
+  use db_connection <- result.try(db.get_connection())
+
   use pog.Returned(_, rows) <- result.try(
-    sql.get_post_comments_by_id(db.get_connection(), post_comment_id)
+    sql.get_post_comments_by_id(db_connection, post_comment_id)
     |> result.replace_error("Problem getting post_comment by id from database"),
   )
 

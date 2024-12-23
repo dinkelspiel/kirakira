@@ -15,8 +15,10 @@ pub type User {
 }
 
 pub fn get_user_by_username(username: String) -> Result(User, String) {
+  use db_connection <- result.try(db.get_connection())
+
   use returned <- result.try(
-    sql.get_user_by_username(db.get_connection(), username)
+    sql.get_user_by_username(db_connection, username)
     |> result.replace_error("Problem getting user by username"),
   )
 
@@ -34,8 +36,10 @@ pub fn get_user_by_username(username: String) -> Result(User, String) {
 }
 
 pub fn get_user_by_email(email: String) -> Result(User, String) {
+  use db_connection <- result.try(db.get_connection())
+
   use returned <- result.try(
-    sql.get_user_by_email(db.get_connection(), email)
+    sql.get_user_by_email(db_connection, email)
     |> result.replace_error("Problem getting user by email"),
   )
 
@@ -53,8 +57,10 @@ pub fn get_user_by_email(email: String) -> Result(User, String) {
 }
 
 pub fn get_user_by_id(user_id: Int) -> Result(User, String) {
+  use db_connection <- result.try(db.get_connection())
+
   use returned <- result.try(
-    sql.get_user_by_id(db.get_connection(), user_id)
+    sql.get_user_by_id(db_connection, user_id)
     |> result.replace_error("Problem getting user by id"),
   )
 
@@ -72,10 +78,14 @@ pub fn get_user_by_id(user_id: Int) -> Result(User, String) {
 }
 
 pub fn is_user_admin(user_id: Int) -> Bool {
-  case sql.get_user_is_admin(db.get_connection(), user_id) {
-    Ok(returned) ->
-      case list.first(returned.rows) {
-        Ok(_) -> True
+  case db.get_connection() {
+    Ok(db_connection) ->
+      case sql.get_user_is_admin(db_connection, user_id) {
+        Ok(returned) ->
+          case list.first(returned.rows) {
+            Ok(_) -> True
+            Error(_) -> False
+          }
         Error(_) -> False
       }
     Error(_) -> False
@@ -84,7 +94,9 @@ pub fn is_user_admin(user_id: Int) -> Bool {
 
 /// Takes plain text password
 pub fn set_password_for_user(user_id: Int, password: String) {
-  sql.update_user_password(db.get_connection(), user_id, password)
+  use db_connection <- result.try(db.get_connection())
+
+  sql.update_user_password(db_connection, user_id, password)
   |> result.replace(Nil)
   |> result.replace_error("Problem with updating user password")
 }
