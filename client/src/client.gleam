@@ -35,6 +35,7 @@ import gleam/json
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/uri.{type Uri}
+import hermodr
 import lustre
 import lustre/attribute.{class, href, id, src}
 import lustre/effect.{type Effect}
@@ -783,6 +784,8 @@ fn create_comment(model: Model) {
 }
 
 pub fn view(model: Model) -> Element(Msg) {
+  use <- hermodr.initialize()
+
   body(
     [
       class(

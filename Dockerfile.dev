@@ -1,9 +1,5 @@
-FROM alpine:latest
-RUN apk add \
-    --no-cache \
-    --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
-    gleam=~1.6
-RUN apk add rebar3 build-base bsd-compat-headers curl watchexec just
+FROM ghcr.io/gleam-lang/gleam:v1.6.3-erlang-alpine
+RUN apk add rebar3 build-base bsd-compat-headers curl watchexec inotify-tools nodejs npm
 COPY ./ /app
 WORKDIR /app
 ENV DB_HOST postgres
@@ -11,5 +7,8 @@ ENV DB_PASSWORD kirakira
 ENV DB_USER root
 ENV DB_NAME kirakira
 ENV DB_PORT 3306
-RUN just clean
-CMD ["watchexec", "-r", "-e", "gleam", "--", "just", "dev-no-env"]
+RUN npm install -g concurrently
+WORKDIR /app/client
+RUN echo "pub fn get_api_url() { \"http://localhost:8001\" }" > ./src/env.gleam
+WORKDIR /app
+CMD concurrently "cd /app/client && watchexec -r -e gleam -- gleam run -m lustre/dev build --outdir=../server/priv/static --minify" "cd /app/server && watchexec -r -e gleam -- gleam run"

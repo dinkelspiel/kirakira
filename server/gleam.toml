@@ -34,6 +34,7 @@ gleam_regexp = ">= 1.0.0 and < 2.0.0"
 birl = ">= 1.8.0 and < 2.0.0"
 mist = ">= 4.0.0 and < 5.0.0"
 cors_builder = ">= 2.0.3 and < 3.0.0"
+hermodr = { path = "../hermodr" }
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
