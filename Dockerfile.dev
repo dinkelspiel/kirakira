@@ -19,4 +19,4 @@ RUN echo "pub fn get_api_url() { \"http://localhost:8001\" }" > ./src/env.gleam
 WORKDIR /app/server
 RUN gleam clean
 WORKDIR /app
-CMD concurrently "cd /app/client && watchexec -r -e gleam -- gleam run -m lustre/dev build --outdir=../server/priv/static --minify" "cd /app/server && watchexec -r -e gleam -- gleam run"
+CMD concurrently "cd /app/client && watchexec -r -e gleam -w ../ -- gleam run -m lustre/dev build --outdir=../server/priv/static --minify" "cd /app/server && watchexec -r -e gleam -w ../ -- gleam run"

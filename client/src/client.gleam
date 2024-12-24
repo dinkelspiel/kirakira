@@ -40,7 +40,7 @@ import lustre
 import lustre/attribute.{class, href, id, src}
 import lustre/effect.{type Effect}
 import lustre/element.{type Element, text}
-import lustre/element/html.{a, body, footer, img, nav, p, span}
+import lustre/element/html.{a, body, div, footer, img, nav, p, span}
 import lustre_http
 import modem
 import shared.{type Post, type PostComment, type Tag, Post, PostComment, Tag}
@@ -786,78 +786,81 @@ fn create_comment(model: Model) {
 pub fn view(model: Model) -> Element(Msg) {
   use <- hermodr.initialize()
 
-  body(
-    [
-      class(
-        "bg-[#fefefc] text-[#151515] w-[100vw] min-h-[100vh] h-[100vh] px-4 max-w-[800px] py-4 mx-auto flex flex-col h-screen gap-4",
-      ),
-      id("app"),
-    ],
-    [
-      nav(
-        [
-          class(
-            "text-sm font-bold text-neutral-700 h-[28px] flex justify-between items-center",
-          ),
-        ],
-        [
-          a([href("/"), class("flex group gap-2 items-center")], [
-            img([
-              src("https://gleam.run/images/lucy/lucy.svg"),
-              attribute.alt("Lucy"),
-              class("size-[18px] group-hover:animate-wiggle"),
-            ]),
-            p([class("group-hover:underline")], [text("Latest")]),
-          ]),
-          case model.auth_user {
-            None ->
-              a([href("/auth/login"), class("hover:underline")], [text("Login")])
-            Some(auth_user) ->
-              span([class("flex gap-2 items-center")], [
-                a(
-                  [
-                    class("font-normal"),
-                    button_class(),
-                    class("hover:bg-[#584355]/80"),
-                    href("/create-post"),
-                  ],
-                  [text("Post")],
-                ),
-                a(
-                  [
-                    class("hover:underline"),
-                    href("/user/" <> auth_user.username),
-                  ],
-                  [text(auth_user.username)],
-                ),
-              ])
-          },
-        ],
-      ),
-      html.main([class("mb-auto")], [
-        case model.route, model.auth_user {
-          Active, _ -> latest_view(model)
-          Login, _ -> login_view(model)
-          Signup(auth_code), _ -> signup_view(model, auth_code)
-          ForgotPassword, _ -> forgot_password(model)
-          ChangePassword(_), _ -> change_password(model)
-          CreatePost, Some(_) -> create_post_view(model)
-          ShowPost(_), _ -> show_post_view(model)
-          UserPage(_), Some(_) -> user_view(model)
-          NotFound, _ -> text("404 Not found")
-          _, _ -> text("404 Not found")
-        },
-      ]),
-      footer([class("text-center text-neutral-500 text-xs pb-2")], [
-        text("Made with <3 by the community, contribute on "),
-        a(
-          [
-            href("https://github.com/dinkelspiel/kirakira"),
-            class("hover:underline text-neutral-700 font-bold"),
-          ],
-          [text("GitHub")],
+  body([id("app")], [
+    div(
+      [
+        class(
+          "bg-[#fefefc] text-[#151515] p-4 max-w-[800px] mx-auto flex flex-col min-h-[100dvh] gap-4",
         ),
-      ]),
-    ],
-  )
+      ],
+      [
+        nav(
+          [
+            class(
+              "text-sm font-bold text-neutral-700 h-[28px] flex justify-between items-center",
+            ),
+          ],
+          [
+            a([href("/"), class("flex group gap-2 items-center")], [
+              img([
+                src("https://gleam.run/images/lucy/lucy.svg"),
+                attribute.alt("Lucy"),
+                class("size-[18px] group-hover:animate-wiggle"),
+              ]),
+              p([class("group-hover:underline")], [text("Latest")]),
+            ]),
+            case model.auth_user {
+              None ->
+                a([href("/auth/login"), class("hover:underline")], [
+                  text("Login"),
+                ])
+              Some(auth_user) ->
+                span([class("flex gap-2 items-center")], [
+                  a(
+                    [
+                      class("font-normal"),
+                      button_class(),
+                      class("hover:bg-[#584355]/80"),
+                      href("/create-post"),
+                    ],
+                    [text("Post")],
+                  ),
+                  a(
+                    [
+                      class("hover:underline"),
+                      href("/user/" <> auth_user.username),
+                    ],
+                    [text(auth_user.username)],
+                  ),
+                ])
+            },
+          ],
+        ),
+        html.main([class("mb-auto")], [
+          case model.route, model.auth_user {
+            Active, _ -> latest_view(model)
+            Login, _ -> login_view(model)
+            Signup(auth_code), _ -> signup_view(model, auth_code)
+            ForgotPassword, _ -> forgot_password(model)
+            ChangePassword(_), _ -> change_password(model)
+            CreatePost, Some(_) -> create_post_view(model)
+            ShowPost(_), _ -> show_post_view(model)
+            UserPage(_), Some(_) -> user_view(model)
+            NotFound, _ -> text("404 Not found")
+            _, _ -> text("404 Not found")
+          },
+        ]),
+        footer([class("text-center text-neutral-500 text-xs pb-2")], [
+          text("Made with <3 by the community, contribute on "),
+          a(
+            [
+              href("https://github.com/dinkelspiel/kirakira"),
+              class("hover:underline text-neutral-700 font-bold"),
+            ],
+            [text("GitHub")],
+          ),
+        ]),
+      ],
+    ),
+  ])
 }

@@ -35,6 +35,8 @@ birl = ">= 1.8.0 and < 2.0.0"
 mist = ">= 4.0.0 and < 5.0.0"
 cors_builder = ">= 2.0.3 and < 3.0.0"
 hermodr = { path = "../hermodr" }
+glisten = ">= 7.0.0 and < 8.0.0"
+simplifile = ">= 2.2.0 and < 3.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
