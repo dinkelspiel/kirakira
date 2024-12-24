@@ -3,7 +3,7 @@ import gleam/result
 import pog
 import server/env.{get_env}
 
-pub fn get_connection() {
+pub fn get_connection_raw() -> Result(pog.Connection, String) {
   use env <- result.try(get_env())
 
   Ok(pog.connect(
@@ -17,4 +17,17 @@ pub fn get_connection() {
       pool_size: 15,
     ),
   ))
+}
+
+pub fn get_connection(
+  fun: fn(pog.Connection) -> Result(a, String),
+) -> Result(a, String) {
+  case get_connection_raw() {
+    Ok(x) -> {
+      let a = fun(x)
+      pog.disconnect(x)
+      a
+    }
+    Error(e) -> Error(e)
+  }
 }

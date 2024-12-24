@@ -56,7 +56,7 @@ fn decode_create_user(
 }
 
 fn does_user_with_same_email_or_username_exist(create_user: CreateUser) {
-  use db_connection <- result.try(db.get_connection())
+  use db_connection <- db.get_connection()
 
   use result <- result.try(
     sql.get_user_by_email_or_username(
@@ -71,7 +71,7 @@ fn does_user_with_same_email_or_username_exist(create_user: CreateUser) {
 }
 
 fn insert_user_to_db(create_user: CreateUser, auth_code: AuthCode) {
-  use db_connection <- result.try(db.get_connection())
+  use db_connection <- db.get_connection()
 
   sql.create_user(
     db_connection,

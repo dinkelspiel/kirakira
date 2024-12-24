@@ -11,7 +11,7 @@ pub fn get_user_id_from_session(req: Request) {
     |> result.replace_error("No session cookie found"),
   )
 
-  use db_connection <- result.try(db.get_connection())
+  use db_connection <- db.get_connection()
 
   let session_token = case
     sql.get_user_id_from_session(db_connection, session_token)
@@ -31,7 +31,7 @@ pub fn get_user_id_from_session(req: Request) {
 pub fn create_user_session(user_id: Int) {
   let token = generate_token(64)
 
-  use db_connection <- result.try(db.get_connection())
+  use db_connection <- db.get_connection()
 
   case sql.create_user_session(db_connection, user_id, token) {
     Ok(_) -> Ok(token)

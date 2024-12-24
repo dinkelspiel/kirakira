@@ -36,7 +36,7 @@ fn decode_create_comment(
 }
 
 fn does_parent_exist_in_post(comment: CreateComment, post_id: Int) {
-  use db_connection <- result.try(db.get_connection())
+  use db_connection <- db.get_connection()
 
   case comment.parent_id {
     Some(parent_id) ->
@@ -52,7 +52,7 @@ fn does_parent_exist_in_post(comment: CreateComment, post_id: Int) {
 }
 
 fn insert_comment_to_db(comment: CreateComment, user_id: Int, post_id: Int) {
-  use db_connection <- result.try(db.get_connection())
+  use db_connection <- db.get_connection()
 
   case comment.parent_id {
     Some(parent_id) ->

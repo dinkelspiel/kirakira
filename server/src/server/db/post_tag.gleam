@@ -4,7 +4,7 @@ import server/db
 import squirrels/sql
 
 pub fn create_post_tag(post_id: Int, tag_id: Int) {
-  case db.get_connection() {
+  case db.get_connection_raw() {
     Ok(db_connection) ->
       case get_post_tag(post_id, tag_id) {
         Ok(_) -> {
@@ -20,7 +20,7 @@ pub fn create_post_tag(post_id: Int, tag_id: Int) {
 }
 
 pub fn get_post_tag(post_id: Int, tag_id: Int) {
-  use db_connection <- result.try(db.get_connection())
+  use db_connection <- db.get_connection()
 
   use post_tag_rows <- result.try(
     sql.get_post_tags(db_connection, post_id, tag_id)

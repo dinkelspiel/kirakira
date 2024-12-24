@@ -15,7 +15,7 @@ pub type User {
 }
 
 pub fn get_user_by_username(username: String) -> Result(User, String) {
-  use db_connection <- result.try(db.get_connection())
+  use db_connection <- db.get_connection()
 
   use returned <- result.try(
     sql.get_user_by_username(db_connection, username)
@@ -36,7 +36,7 @@ pub fn get_user_by_username(username: String) -> Result(User, String) {
 }
 
 pub fn get_user_by_email(email: String) -> Result(User, String) {
-  use db_connection <- result.try(db.get_connection())
+  use db_connection <- db.get_connection()
 
   use returned <- result.try(
     sql.get_user_by_email(db_connection, email)
@@ -57,7 +57,7 @@ pub fn get_user_by_email(email: String) -> Result(User, String) {
 }
 
 pub fn get_user_by_id(user_id: Int) -> Result(User, String) {
-  use db_connection <- result.try(db.get_connection())
+  use db_connection <- db.get_connection()
 
   use returned <- result.try(
     sql.get_user_by_id(db_connection, user_id)
@@ -78,7 +78,7 @@ pub fn get_user_by_id(user_id: Int) -> Result(User, String) {
 }
 
 pub fn is_user_admin(user_id: Int) -> Bool {
-  case db.get_connection() {
+  case db.get_connection_raw() {
     Ok(db_connection) ->
       case sql.get_user_is_admin(db_connection, user_id) {
         Ok(returned) ->
@@ -94,7 +94,7 @@ pub fn is_user_admin(user_id: Int) -> Bool {
 
 /// Takes plain text password
 pub fn set_password_for_user(user_id: Int, password: String) {
-  use db_connection <- result.try(db.get_connection())
+  use db_connection <- db.get_connection()
 
   sql.update_user_password(db_connection, user_id, password)
   |> result.replace(Nil)

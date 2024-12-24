@@ -81,7 +81,7 @@ fn does_post_with_href_exist(post: CreatePost) {
     return: False,
   )
 
-  case db.get_connection() {
+  case db.get_connection_raw() {
     Ok(db_connection) ->
       case post.href {
         Some(href) ->
@@ -96,7 +96,7 @@ fn does_post_with_href_exist(post: CreatePost) {
 }
 
 fn insert_post_to_db(req: Request, post: CreatePost, user_id: Int) {
-  use db_connection <- result.try(db.get_connection())
+  use db_connection <- db.get_connection()
 
   let _ = case post.href {
     Some(href) ->

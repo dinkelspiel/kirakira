@@ -11,7 +11,7 @@ pub fn create_forgot_password(email: String) {
 
   let token = generatetoken.generate_token(64)
 
-  use db_connection <- result.try(db.get_connection())
+  use db_connection <- db.get_connection()
 
   let result = sql.create_forgot_password(db_connection, user.id, token)
 
@@ -22,7 +22,7 @@ pub fn create_forgot_password(email: String) {
 }
 
 pub fn get_user_by_forgot_password(token: String) {
-  use db_connection <- result.try(db.get_connection())
+  use db_connection <- db.get_connection()
 
   let forgot_passwords = sql.get_user_by_forgot_password(db_connection, token)
 
@@ -38,7 +38,7 @@ pub fn get_user_by_forgot_password(token: String) {
 
 // Takes in token
 pub fn mark_forgot_password_as_used(token: String) {
-  use db_connection <- result.try(db.get_connection())
+  use db_connection <- db.get_connection()
 
   sql.update_forgot_password_as_used(db_connection, token)
   |> result.replace(Nil)

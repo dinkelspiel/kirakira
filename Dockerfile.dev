@@ -1,14 +1,22 @@
-FROM ghcr.io/gleam-lang/gleam:v1.6.3-erlang-alpine
-RUN apk add rebar3 build-base bsd-compat-headers curl watchexec inotify-tools nodejs npm
+FROM ghcr.io/gleam-lang/gleam:v1.6.3-scratch as gleam
+FROM erlang:27-alpine
+RUN apk add rebar3 build-base wget tar gzip bsd-compat-headers curl watchexec inotify-tools nodejs npm
+COPY --from=gleam /bin/gleam /bin/gleam
 COPY ./ /app
+WORKDIR /
 WORKDIR /app
 ENV DB_HOST postgres
 ENV DB_PASSWORD kirakira
-ENV DB_USER root
+ENV DB_USER kirakira
 ENV DB_NAME kirakira
-ENV DB_PORT 3306
+ENV DB_PORT 5432
+ENV RESEND_API_KEY re_123
+ENV RESEND_EMAIL test@example.com
 RUN npm install -g concurrently
 WORKDIR /app/client
+RUN gleam clean
 RUN echo "pub fn get_api_url() { \"http://localhost:8001\" }" > ./src/env.gleam
+WORKDIR /app/server
+RUN gleam clean
 WORKDIR /app
 CMD concurrently "cd /app/client && watchexec -r -e gleam -- gleam run -m lustre/dev build --outdir=../server/priv/static --minify" "cd /app/server && watchexec -r -e gleam -- gleam run"

@@ -22,7 +22,7 @@ pub type UserLikeColumn {
 }
 
 pub fn get_user_likes(user_id: Int, column_id: Int, column: UserLikeColumn) {
-  use db_connection <- result.try(db.get_connection())
+  use db_connection <- db.get_connection()
 
   case column {
     Post -> {
@@ -61,7 +61,7 @@ pub fn set_status_for_user_like(
   status: sql.Likestatus,
   column: UserLikeColumn,
 ) {
-  use db_connection <- result.try(db.get_connection())
+  use db_connection <- db.get_connection()
 
   case column {
     Post -> {
@@ -88,7 +88,7 @@ pub fn set_status_for_user_like(
 }
 
 pub fn create_user_like(user_id: Int, column_id: Int, column: UserLikeColumn) {
-  use db_connection <- result.try(db.get_connection())
+  use db_connection <- db.get_connection()
 
   case column {
     Post ->

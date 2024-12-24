@@ -26,7 +26,7 @@ pub type ListPostsDBRow {
 }
 
 pub fn get_tags_for_post(post_id: Int) {
-  use db_connection <- result.try(db.get_connection())
+  use db_connection <- db.get_connection()
   case sql.get_tags_by_post_id(db_connection, post_id) {
     Ok(returned) ->
       Ok(
@@ -108,7 +108,7 @@ pub fn post_to_json(post: Post) -> Json {
 }
 
 pub fn get_posts(req: Request) -> Result(List(Post), String) {
-  use db_connection <- result.try(db.get_connection())
+  use db_connection <- db.get_connection()
 
   use post_rows <- result.try(
     sql.get_posts(db_connection)
@@ -138,7 +138,7 @@ pub fn get_posts(req: Request) -> Result(List(Post), String) {
 }
 
 pub fn get_post_by_id(req: Request, post_id: Int) -> Result(Post, String) {
-  use db_connection <- result.try(db.get_connection())
+  use db_connection <- db.get_connection()
 
   use post_rows <- result.try(
     sql.get_post_by_id(db_connection, post_id)
@@ -173,7 +173,7 @@ pub fn get_latest_post_by_user(
   req: Request,
   user_id: Int,
 ) -> Result(Post, String) {
-  use db_connection <- result.try(db.get_connection())
+  use db_connection <- db.get_connection()
 
   use post_rows <- result.try(
     sql.get_latest_post_by_user_id(db_connection, user_id)

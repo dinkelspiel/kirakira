@@ -18,7 +18,7 @@ pub type PostSitemap {
 }
 
 pub fn get_post_sitemap() {
-  let assert Ok(db_connection) = db.get_connection()
+  let assert Ok(db_connection) = db.get_connection_raw()
 
   let assert Ok(posts) = sql.get_posts_unlimited(db_connection)
 
@@ -43,7 +43,7 @@ pub fn get_post_sitemap() {
 }
 
 fn get_comments_for_sitemap(post_id: Int) {
-  let assert Ok(db_connection) = db.get_connection()
+  let assert Ok(db_connection) = db.get_connection_raw()
 
   case sql.get_comments_for_sitemap(db_connection, post_id) {
     Ok(result) -> result.rows
