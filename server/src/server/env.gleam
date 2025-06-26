@@ -1,4 +1,5 @@
-import decode
+import dot_env
+import gleam/dynamic/decode
 import glenv
 
 pub type Env {
@@ -24,35 +25,48 @@ pub fn get_env() {
     #("RESEND_EMAIL", glenv.String),
   ]
 
-  let decoder =
-    decode.into({
-      use db_host <- decode.parameter
-      use db_password <- decode.parameter
-      use db_port <- decode.parameter
-      use db_user <- decode.parameter
-      use db_name <- decode.parameter
-      use resend_api_key <- decode.parameter
-      use resend_email <- decode.parameter
+  let decoder = {
+    use db_host <- decode.field("DB_HOST", decode.string)
+    use db_password <- decode.field("DB_PASSWORD", decode.string)
+    use db_port <- decode.field("DB_PORT", decode.int)
+    use db_user <- decode.field("DB_USER", decode.string)
+    use db_name <- decode.field("DB_NAME", decode.string)
+    use resend_api_key <- decode.field("RESEND_API_KEY", decode.string)
+    use resend_email <- decode.field("RESEND_EMAIL", decode.string)
+    decode.success(Env(
+      db_host,
+      db_password,
+      db_port,
+      db_user,
+      db_name,
+      resend_api_key,
+      resend_email,
+    ))
+  }
 
-      Env(
-        db_host,
-        db_password,
-        db_port,
-        db_user,
-        db_name,
-        resend_api_key,
-        resend_email,
-      )
-    })
-    |> decode.field("DB_HOST", decode.string)
-    |> decode.field("DB_PASSWORD", decode.string)
-    |> decode.field("DB_PORT", decode.int)
-    |> decode.field("DB_USER", decode.string)
-    |> decode.field("DB_NAME", decode.string)
-    |> decode.field("RESEND_API_KEY", decode.string)
-    |> decode.field("RESEND_EMAIL", decode.string)
+  dot_env.new()
+  |> dot_env.set_path("../.env")
+  |> dot_env.set_debug(False)
+  |> dot_env.load
 
-  let assert Ok(env) = glenv.load(decoder, definitions)
-
-  env
+  case glenv.load(decoder, definitions) {
+    Ok(env) -> Ok(env)
+    Error(err) ->
+      case err {
+        glenv.DefinitionMismatchError(_) ->
+          Error("Definition mismatch for env in server environment")
+        glenv.MissingKeyError(key) ->
+          Error(
+            "The env key '"
+            <> key
+            <> "' was not found in the server environment",
+          )
+        glenv.InvalidEnvValueError(key, _) ->
+          Error(
+            "The env key '"
+            <> key
+            <> "' was of the wrong type in the server environment",
+          )
+      }
+  }
 }

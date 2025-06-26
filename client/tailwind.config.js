@@ -1,5 +1,9 @@
 module.exports = {
-  content: ["./index.html", "./src/**/*.{gleam,mjs}"],
+  content: [
+    "./index.html",
+    "./src/**/*.{gleam,mjs}",
+    "../hermodr/src/**/*.{gleam,mjs}",
+  ],
   theme: {
     extend: {
       animation: {

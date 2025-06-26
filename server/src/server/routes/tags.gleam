@@ -32,7 +32,7 @@ fn list_tags_res() -> Response {
           json.object([
             #("tags", json.array(tags, fn(tag) { tag.tag_to_json(tag) })),
           ])
-          |> json.to_string_builder,
+          |> json.to_string_tree,
         )
       Error(_) -> Error("Problem getting tags from database")
     }

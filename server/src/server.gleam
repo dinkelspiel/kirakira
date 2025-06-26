@@ -1,7 +1,8 @@
-import server/router
 import gleam/erlang/process
 import mist
+import server/router
 import wisp
+import wisp/wisp_mist
 
 pub fn main() {
   // This sets the logger to print INFO level logs, and other sensible defaults
@@ -14,8 +15,9 @@ pub fn main() {
 
   // Start the Mist web server.
   let assert Ok(_) =
-    wisp.mist_handler(router.handle_request, secret_key_base)
+    wisp_mist.handler(router.handle_request, secret_key_base)
     |> mist.new
+    |> mist.bind("0.0.0.0")
     |> mist.port(8001)
     |> mist.start_http
 

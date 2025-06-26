@@ -1,58 +1,71 @@
-import cake
-import cake/dialect/mysql_dialect
-import gleam/dynamic.{type Dynamic}
+import gleam/dynamic/decode
+import gleam/list
 import gleam/option.{Some}
-import gmysql
+import gleam/result
+import parrot/dev
 import server/env.{get_env}
+import shork
 
-fn get_connection() {
-  let env = get_env()
+pub fn get_connection_raw() -> Result(shork.Connection, String) {
+  use env <- result.try(get_env())
 
-  let assert Ok(connection) =
-    gmysql.connect(gmysql.Config(
-      host: env.db_host,
-      port: env.db_port,
-      user: Some(env.db_user),
-      password: Some(env.db_password),
-      connection_mode: gmysql.Asynchronous,
-      connection_timeout: gmysql.Infinity,
-      database: env.db_name,
-      keep_alive: 1000,
-    ))
-
-  connection
+  Ok(
+    shork.default_config()
+    |> shork.host(env.db_host)
+    |> shork.database(env.db_name)
+    |> shork.port(env.db_port)
+    |> shork.user(env.db_user)
+    |> shork.password(env.db_password)
+    |> shork.connect,
+  )
 }
 
-pub fn execute_read(
-  read_query: cake.ReadQuery,
-  params: List(gmysql.Param),
-  decoder: fn(dynamic.Dynamic) -> Result(a, List(dynamic.DecodeError)),
+pub fn get_connection(
+  fun: fn(shork.Connection) -> Result(a, String),
+) -> Result(a, String) {
+  case get_connection_raw() {
+    Ok(x) -> {
+      let a = fun(x)
+      shork.disconnect(x)
+      a
+    }
+    Error(e) -> Error(e)
+  }
+}
+
+pub fn parrot_to_shork(param: dev.Param) {
+  case param {
+    dev.ParamBool(x) -> shork.bool(x)
+    dev.ParamFloat(x) -> shork.float(x)
+    dev.ParamInt(x) -> shork.int(x)
+    dev.ParamString(x) -> shork.text(x)
+    dev.ParamBitArray(_) -> panic as "shork does not support bit arrays"
+    dev.ParamTimestamp(_) ->
+      panic as "timestamp parameter needs to be implemented"
+    dev.ParamDynamic(_) -> panic as "dynamic parameter need to implemented"
+  }
+}
+
+pub fn query(
+  db db: shork.Connection,
+  b b: #(String, List(dev.Param), decode.Decoder(a)),
 ) {
-  let prepared_statement =
-    read_query
-    |> mysql_dialect.read_query_to_prepared_statement
-    |> cake.get_sql
-
-  let connection = get_connection()
-  let rows = gmysql.query(prepared_statement, connection, params, decoder)
-  gmysql.disconnect(connection)
-  rows
+  b.0
+  |> shork.query()
+  |> shork.returning(b.2)
+  |> list.fold(b.1, _, fn(acc, param) {
+    let param = parrot_to_shork(param)
+    shork.parameter(acc, param)
+  })
+  |> shork.execute(db)
 }
 
-pub fn execute_write(
-  write_query: cake.WriteQuery(a),
-  params: List(gmysql.Param),
-) {
-  let prepared_statement =
-    write_query
-    |> mysql_dialect.write_query_to_prepared_statement
-    |> cake.get_sql
-
-  let connection = get_connection()
-  let rows = gmysql.query(prepared_statement, connection, params, dynamic.int)
-  gmysql.disconnect(connection)
-  rows
+pub fn exec(db db: shork.Connection, b b: #(String, List(dev.Param))) {
+  b.0
+  |> shork.query()
+  |> list.fold(b.1, _, fn(acc, param) {
+    let param = parrot_to_shork(param)
+    shork.parameter(acc, param)
+  })
+  |> shork.execute(db)
 }
-
-@external(erlang, "erlang", "list_to_tuple")
-pub fn list_to_tuple(dynamic: Dynamic) -> Dynamic

@@ -1,10 +1,10 @@
+import gleam/http.{Post}
+import gleam/json
+import gleam/result
 import server/db/post
 import server/db/user_like
 import server/db/user_session
 import server/response
-import gleam/http.{Post}
-import gleam/json
-import gleam/result
 import wisp.{type Request, type Response}
 
 pub fn post_likes(req: Request, post_id: Int) -> Response {
@@ -24,7 +24,7 @@ pub fn like_post(req: Request, post_id: Int) -> Response {
 
     Ok(
       json.object([#("message", json.string("Toggled like for post"))])
-      |> json.to_string_builder,
+      |> json.to_string_tree,
     )
   }
 

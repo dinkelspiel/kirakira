@@ -11,6 +11,16 @@ services:
       MYSQL_DATABASE: kirakira
     volumes:
       - mysql:/var/lib/mysql
+  postgres:
+    image: postgres:17.2
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=kirakira
+      - POSTGRES_USER=kirakira
+      - POSTGRES_DB=kirakira
   phpmyadmin:
     image: phpmyadmin
     restart: always
@@ -22,10 +32,20 @@ services:
       - PMA_HOST=mysql
       - PMA_USER=root
       - PMA_PASSWORD=kirakira
-  server:
+  dev:
     build:
       context: .
-      dockerfile: ./prod.Dockerfile
+      dockerfile: ./Dockerfile.dev
+    ports:
+      - "8001:8001"
+    volumes:
+      - type: bind
+        source: ./
+        target: /app
+  prod:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.prod
     ports:
       - "8001:8001"
     volumes:
@@ -34,4 +54,5 @@ services:
         target: /app
 volumes:
   mysql: ~
+  postgres: ~
   dev:

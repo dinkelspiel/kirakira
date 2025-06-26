@@ -28,7 +28,7 @@ fn show_auth_code(token: String) -> Response {
 
     Ok(
       json.object([#("username", json.string(user.username))])
-      |> json.to_string_builder,
+      |> json.to_string_tree,
     )
   }
 
@@ -45,7 +45,7 @@ fn create_auth_code(req: Request) -> Response {
 
     Ok(
       json.object([#("message", json.string(token))])
-      |> json.to_string_builder,
+      |> json.to_string_tree,
     )
   }
 

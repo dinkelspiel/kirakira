@@ -32,40 +32,43 @@ pub fn login_view(model: Model) {
     ],
     [
       h1([class("text-[#584355] font-bold")], [text("Login")]),
-      form([class("grid gap-2 w-full"), event.on_submit(RequestLogin)], [
-        label([attribute.for("login_form:email_username")], [
-          text("E-mail or Username"),
-        ]),
-        input([
-          input_class(),
-          event.on_input(LoginUpdateEmailUsername),
-          attribute.id("login_form:email_username"),
-          attribute.type_("text"),
-          attribute.attribute("autocomplete", "username"),
-          attribute.value(model.login_email_username),
-        ]),
-        label([attribute.for("login_form:password")], [text("Password")]),
-        input([
-          input_class(),
-          event.on_input(LoginUpdatePassword),
-          attribute.id("login_form:password"),
-          attribute.attribute("type", "password"),
-          attribute.attribute("autocomplete", "current-password"),
-        ]),
-        div([class("flex justify-between items-center mt-2")], [
-          button([button_class(), attribute.attribute("type", "submit")], [
-            text("Login"),
+      form(
+        [class("grid gap-2 w-full"), event.on_submit(fn(_) { RequestLogin })],
+        [
+          label([attribute.for("login_form:email_username")], [
+            text("E-mail or Username"),
           ]),
-          a([href("/auth/forgot-password"), class("ms-auto text-[#584355]")], [
-            text("Forgot Password"),
+          input([
+            input_class(),
+            event.on_input(LoginUpdateEmailUsername),
+            attribute.id("login_form:email_username"),
+            attribute.type_("text"),
+            attribute.attribute("autocomplete", "username"),
+            attribute.value(model.login_email_username),
           ]),
-        ]),
-        case model.login_error {
-          Some(err) ->
-            p([class("text-red-500 text-center")], [text("Error: " <> err)])
-          None -> element.none()
-        },
-      ]),
+          label([attribute.for("login_form:password")], [text("Password")]),
+          input([
+            input_class(),
+            event.on_input(LoginUpdatePassword),
+            attribute.id("login_form:password"),
+            attribute.attribute("type", "password"),
+            attribute.attribute("autocomplete", "current-password"),
+          ]),
+          div([class("flex justify-between items-center mt-2")], [
+            button([button_class(), attribute.attribute("type", "submit")], [
+              text("Login"),
+            ]),
+            a([href("/auth/forgot-password"), class("ms-auto text-[#584355]")], [
+              text("Forgot Password"),
+            ]),
+          ]),
+          case model.login_error {
+            Some(err) ->
+              p([class("text-red-500 text-center")], [text("Error: " <> err)])
+            None -> element.none()
+          },
+        ],
+      ),
     ],
   )
 }

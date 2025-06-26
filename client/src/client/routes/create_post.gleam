@@ -26,7 +26,10 @@ pub fn create_post_view(model: Model) {
     [
       h1([class("text-[#584355] font-bold")], [text("Create Post")]),
       form(
-        [class("w-full gap-4 grid"), event.on_submit(RequestCreatePost)],
+        [
+          class("w-full gap-4 grid"),
+          event.on_submit(fn(_) { RequestCreatePost }),
+        ],
         list.append(
           [
             div(

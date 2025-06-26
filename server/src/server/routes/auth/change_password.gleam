@@ -1,4 +1,5 @@
 import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/http.{Post}
 import gleam/json
 import gleam/result
@@ -20,10 +21,13 @@ type ChangePassword {
 
 fn decode_change_password(
   json: dynamic.Dynamic,
-) -> Result(ChangePassword, dynamic.DecodeErrors) {
-  let decoder =
-    dynamic.decode1(ChangePassword, dynamic.field("password", dynamic.string))
-  decoder(json)
+) -> Result(ChangePassword, List(decode.DecodeError)) {
+  let decoder = {
+    use password <- decode.field("password", decode.string)
+
+    decode.success(ChangePassword(password:))
+  }
+  decode.run(json, decoder)
 }
 
 fn do_change_password(req: Request, token: String) {
@@ -42,7 +46,7 @@ fn do_change_password(req: Request, token: String) {
 
     Ok(
       json.object([#("message", json.string("Updated password"))])
-      |> json.to_string_builder,
+      |> json.to_string_tree,
     )
   }
 

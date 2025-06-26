@@ -30,7 +30,7 @@ fn validate_session(req: Request) -> Response {
         #("user_id", json.int(user_id)),
         #("is_admin", json.bool(is_admin)),
       ])
-      |> json.to_string_builder,
+      |> json.to_string_tree,
     )
   }
 

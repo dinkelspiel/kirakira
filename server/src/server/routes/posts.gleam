@@ -1,15 +1,12 @@
-import cake/insert as i
-import cake/select as s
-import cake/where as w
 import gleam/bool
 import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/http.{Get, Post}
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import gleam/regex
+import gleam/regexp
 import gleam/result
-import gmysql
 import server/db
 import server/db/post
 import server/db/post_tag
@@ -17,6 +14,7 @@ import server/db/tag
 import server/db/user
 import server/db/user_session
 import server/response
+import server/sql
 import shared.{Admin}
 import wisp.{type Request, type Response}
 
@@ -30,40 +28,18 @@ pub fn posts(req: Request) -> Response {
   }
 }
 
-pub fn list_posts(req: Request) -> Result(List(shared.Post), String) {
-  let result =
-    post.get_posts_query()
-    |> post.run_post_query([])
-
-  case result {
-    Ok(rows) -> Ok(post.post_rows_to_post(req, rows, False))
-    Error(_) -> Error("Selecting posts")
-  }
-}
-
 pub fn list_posts_res(req: Request) -> Response {
-  let query = {
-    let result =
-      post.get_posts_query()
-      |> post.run_post_query([])
-
-    case result {
-      Ok(rows) -> Ok(rows)
-      Error(_) -> Error("Selecting posts")
-    }
-  }
-
-  let result = case query {
-    Ok(rows) ->
+  let result = case post.get_posts(req) {
+    Ok(posts) ->
       Ok(
         json.object([
           #(
             "posts",
-            post.post_rows_to_post(req, rows, False)
+            posts
               |> json.array(fn(post) { post.post_to_json(post) }),
           ),
         ])
-        |> json.to_string_builder,
+        |> json.to_string_tree,
       )
     Error(error) -> Error(error)
   }
@@ -83,18 +59,26 @@ type CreatePost {
 
 fn decode_create_post(
   json: dynamic.Dynamic,
-) -> Result(CreatePost, dynamic.DecodeErrors) {
-  let decoder =
-    dynamic.decode5(
-      CreatePost,
-      dynamic.field("title", dynamic.string),
-      dynamic.optional_field("href", dynamic.string),
-      dynamic.optional_field("body", dynamic.string),
-      dynamic.field("original_creator", dynamic.bool),
-      dynamic.field("tags", dynamic.list(dynamic.int)),
+) -> Result(CreatePost, List(decode.DecodeError)) {
+  let decoder = {
+    use title <- decode.field("title", decode.string)
+    use href <- decode.optional_field(
+      "href",
+      option.None,
+      decode.optional(decode.string),
     )
+    use body <- decode.optional_field(
+      "body",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use original_creator <- decode.field("original_creator", decode.bool)
+    use tags <- decode.field("tags", decode.list(decode.int))
 
-  decoder(json)
+    decode.success(CreatePost(title:, href:, body:, original_creator:, tags:))
+  }
+
+  decode.run(json, decoder)
 }
 
 fn does_post_with_href_exist(post: CreatePost) {
@@ -103,86 +87,54 @@ fn does_post_with_href_exist(post: CreatePost) {
       Some(_) -> False
       None -> True
     },
-    return: Ok(False),
+    return: False,
   )
 
-  case
-    s.new()
-    |> s.selects([s.col("post.title"), s.col("post.href")])
-    |> s.from_table("post")
-    |> s.where(
-      w.or([
-        case post.href {
-          Some(href) -> w.eq(w.col("post.href"), w.string(href))
-          None -> panic as "Unreachable state because of guard"
-        },
-      ]),
-    )
-    |> s.to_query
-    |> db.execute_read(
-      [
-        gmysql.to_param(case post.href {
-          Some(href) -> href
-          None -> panic as "Unreachable state because of guard"
-        }),
-      ],
-      dynamic.tuple2(dynamic.string, dynamic.string),
-    )
-  {
-    Ok(posts) -> {
-      Ok(list.length(posts) > 0)
-    }
-    Error(_) -> Error("Problem selecting posts with same href")
+  case db.get_connection_raw() {
+    Ok(db) ->
+      case post.href {
+        Some(href) ->
+          case sql.get_post_by_href(href) |> db.query(db, _) {
+            Ok(posts) -> !list.is_empty(posts.rows)
+            Error(_) -> False
+          }
+        None -> False
+      }
+    Error(_) -> False
   }
 }
 
 fn insert_post_to_db(req: Request, post: CreatePost, user_id: Int) {
-  let _ =
-    [
-      i.row([
-        i.string(post.title),
-        case post.href {
-          Some(href) -> i.string(href)
-          None ->
-            case post.body {
-              Some(body) -> i.string(body)
-              None -> panic as "Unreachable state because of guard"
-            }
+  use db <- db.get_connection()
+
+  let _ = case post.href {
+    Some(href) ->
+      sql.create_post_with_href(
+        post.title,
+        href,
+        user_id,
+        case post.original_creator {
+          True -> 1
+          False -> 0
         },
-        i.int(user_id),
-        i.bool(post.original_creator),
-      ]),
-    ]
-    |> i.from_values(table_name: "post", columns: [
-      "title",
-      case post.href {
-        Some(_) -> "href"
-        None ->
-          case post.body {
-            Some(_) -> "body"
-            None -> panic as "Unreachable state because of guard"
-          }
-      },
-      "user_id",
-      "original_creator",
-    ])
-    |> i.to_query
-    |> db.execute_write([
-      gmysql.to_param(post.title),
-      gmysql.to_param(case post.href {
-        Some(href) -> href
-        None ->
-          case post.body {
-            Some(body) -> body
-            None -> panic as "Unreachable state because of guard"
-          }
-      }),
-      gmysql.to_param(user_id),
-      gmysql.to_param(case post.original_creator {
-        False -> 0
-        _ -> 1
-      }),
-    ])
+      )
+      |> db.exec(db, _)
+    None ->
+      case post.body {
+        Some(body) ->
+          sql.create_post_with_body(
+            post.title,
+            body,
+            user_id,
+            case post.original_creator {
+              True -> 1
+              False -> 0
+            },
+          )
+          |> db.exec(db, _)
+        None -> panic as "Unreachable state because of guard"
+      }
+  }
 
   use latest_post <- result.try(post.get_latest_post_by_user(req, user_id))
 
@@ -221,10 +173,8 @@ pub fn create_post(req: Request) -> Response {
 
     let user_is_admin = user.is_user_admin(auth_user_id)
 
-    use does_post_with_href_exist <- result.try(does_post_with_href_exist(post))
-
     use <- bool.guard(
-      when: does_post_with_href_exist,
+      when: does_post_with_href_exist(post),
       return: Error("Post with same link already exists"),
     )
 
@@ -233,11 +183,11 @@ pub fn create_post(req: Request) -> Response {
         case post.href {
           Some(href) -> {
             let assert Ok(re) =
-              regex.from_string(
+              regexp.from_string(
                 "[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)",
               )
 
-            !regex.check(re, href)
+            !regexp.check(re, href)
           }
           None -> False
         }
@@ -273,7 +223,7 @@ pub fn create_post(req: Request) -> Response {
 
     Ok(
       json.object([#("message", json.string("Created post"))])
-      |> json.to_string_builder,
+      |> json.to_string_tree,
     )
   }
 
