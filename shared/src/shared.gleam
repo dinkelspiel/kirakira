@@ -1,4 +1,5 @@
-import gleam/io
+import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/option.{type Option}
 
 pub type Post {
@@ -39,7 +40,6 @@ pub fn string_to_tag_category(category: String) {
     "practices" -> Practices
     "tools" -> Tools
     _ -> {
-      io.debug(category)
       panic as "Invalid tag category"
     }
   }
@@ -54,6 +54,42 @@ pub fn tag_category_to_string(category: TagCategory) {
     Practices -> "practices"
     Tools -> "tools"
   }
+}
+
+pub fn tag_category_decoder() {
+  use decoded_string <- decode.then(decode.string)
+  case decoded_string {
+    "format" -> decode.success(Format)
+    "genre" -> decode.success(Genre)
+    "kirakira" -> decode.success(Kirakira)
+    "platforms" -> decode.success(Platforms)
+    "practices" -> decode.success(Practices)
+    "tools" -> decode.success(Tools)
+    _ -> decode.failure(Format, "Invalid tag category: " <> decoded_string)
+  }
+}
+
+pub fn decode_tag_category(data: dynamic.Dynamic) {
+  let data = decode.run(data, tag_category_decoder())
+  // This comes from the database so we can confidentally assert here since the success is encoded in the schema
+  let assert Ok(data) = data
+  data
+}
+
+pub fn tag_permission_decoder() {
+  use decoded_string <- decode.then(decode.string)
+  case decoded_string {
+    "member" -> decode.success(Member)
+    "admin" -> decode.success(Admin)
+    _ -> decode.failure(Member, "Invalid tag permission: " <> decoded_string)
+  }
+}
+
+pub fn decode_tag_permission(data: dynamic.Dynamic) {
+  let data = decode.run(data, tag_permission_decoder())
+  // This comes from the database so we can confidentally assert here since the success is encoded in the schema
+  let assert Ok(data) = data
+  data
 }
 
 pub fn string_to_tag_permission(permission: String) {
@@ -72,7 +108,12 @@ pub fn tag_permission_to_string(permission: TagPermission) {
 }
 
 pub const tag_categories = [
-  Format, Genre, Kirakira, Platforms, Practices, Tools,
+  Format,
+  Genre,
+  Kirakira,
+  Platforms,
+  Practices,
+  Tools,
 ]
 
 pub type TagCategory {

@@ -3,7 +3,7 @@ import gleam/list
 import gleam/option.{None, Some}
 import server/db
 import server/db/post
-import squirrels/sql
+import server/sql
 
 pub type PostSitemap {
   PostSitemap(
@@ -18,9 +18,9 @@ pub type PostSitemap {
 }
 
 pub fn get_post_sitemap() {
-  let assert Ok(db_connection) = db.get_connection_raw()
+  let assert Ok(db) = db.get_connection_raw()
 
-  let assert Ok(posts) = sql.get_posts_unlimited(db_connection)
+  let assert Ok(posts) = sql.get_posts_unlimited() |> db.query(db, _)
 
   list.map(posts.rows, fn(p) {
     PostSitemap(
@@ -35,17 +35,17 @@ pub fn get_post_sitemap() {
         Some(a) -> a
         None -> panic
       },
-      created_at: p.created_at |> float.round,
+      created_at: p.created_at,
       comments_at: get_comments_for_sitemap(p.id)
-        |> list.map(fn(a) { a.created_at |> float.round }),
+        |> list.map(fn(a) { a.created_at }),
     )
   })
 }
 
 fn get_comments_for_sitemap(post_id: Int) {
-  let assert Ok(db_connection) = db.get_connection_raw()
+  let assert Ok(db) = db.get_connection_raw()
 
-  case sql.get_comments_for_sitemap(db_connection, post_id) {
+  case sql.get_comments_for_sitemap(post_id) |> db.query(db, _) {
     Ok(result) -> result.rows
     Error(_) -> []
   }

@@ -2,18 +2,19 @@ import gleam/json.{type Json}
 import gleam/list
 import gleam/result
 import server/db
+import server/sql
 import shared.{type Tag, Tag, tag_category_to_string, tag_permission_to_string}
-import squirrels/sql
 
 pub type TagDbRow {
   TagDbRow(tag_id: Int, tag_name: String, tag_category: String)
 }
 
 pub fn get_tags() {
-  use db_connection <- db.get_connection()
+  use db <- db.get_connection()
 
   use results <- result.try(
-    sql.get_tags(db_connection)
+    sql.get_tags()
+    |> db.query(db, _)
     |> result.replace_error("Failed getting tags from db"),
   )
 
@@ -22,18 +23,8 @@ pub fn get_tags() {
       Tag(
         id: row.id,
         name: row.name,
-        category: case row.category {
-          sql.Format -> shared.Format
-          sql.Genre -> shared.Genre
-          sql.Kirakira -> shared.Kirakira
-          sql.Platforms -> shared.Platforms
-          sql.Practices -> shared.Practices
-          sql.Tools -> shared.Tools
-        },
-        permission: case row.permission {
-          sql.Admin -> shared.Admin
-          sql.Member -> shared.Member
-        },
+        category: shared.decode_tag_category(row.category),
+        permission: shared.decode_tag_permission(row.permission),
       )
     }),
   )
@@ -49,10 +40,11 @@ pub fn tag_to_json(tag: Tag) -> Json {
 }
 
 pub fn get_tag_by_id(tag_id: Int) -> Result(Tag, String) {
-  use db_connection <- db.get_connection()
+  use db <- db.get_connection()
 
   use tags <- result.try(
-    sql.get_tags_by_id(db_connection, tag_id)
+    sql.get_tags_by_id(tag_id)
+    |> db.query(db, _)
     |> result.replace_error("Problem getting tag by id from database"),
   )
 
@@ -62,18 +54,8 @@ pub fn get_tag_by_id(tag_id: Int) -> Result(Tag, String) {
     Tag(
       id: row.id,
       name: row.name,
-      category: case row.category {
-        sql.Format -> shared.Format
-        sql.Genre -> shared.Genre
-        sql.Kirakira -> shared.Kirakira
-        sql.Platforms -> shared.Platforms
-        sql.Practices -> shared.Practices
-        sql.Tools -> shared.Tools
-      },
-      permission: case row.permission {
-        sql.Admin -> shared.Admin
-        sql.Member -> shared.Member
-      },
+      category: shared.decode_tag_category(row.category),
+      permission: shared.decode_tag_permission(row.permission),
     )
   })
   |> result.replace_error("No tag found when getting tag by id")

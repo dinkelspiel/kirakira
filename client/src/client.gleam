@@ -27,15 +27,14 @@ import client/state.{
   SignUpUpdateUsername, Signup, TagsRecieved, UserPage, UsernameResponse,
   message_error_decoder,
 }
-import decode
 import env
 import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/int
 import gleam/json
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/uri.{type Uri}
-import hermodr
 import lustre
 import lustre/attribute.{class, href, id, src}
 import lustre/effect.{type Effect}
@@ -95,14 +94,10 @@ fn init(_) -> #(Model, Effect(Msg)) {
 fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   case msg {
     OnRouteChange(route) -> #(
-      Model(
-        ..model,
-        route: route,
-        show_post: case route {
-          ShowPost(_) -> None
-          _ -> model.show_post
-        },
-      ),
+      Model(..model, route: route, show_post: case route {
+        ShowPost(_) -> None
+        _ -> model.show_post
+      }),
       case route {
         ShowPost(_) -> get_show_post()
         CreatePost ->
@@ -120,20 +115,21 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
       }
     AuthUserRecieved(auth_user_result) ->
       case auth_user_result {
-        Ok(auth_user) -> #(Model(..model, auth_user: Some(auth_user)), case
-          get_route()
-        {
-          CreatePost ->
-            case uri.parse("/create-post") {
-              Ok(uri) ->
-                effect.from(fn(dispatch) {
-                  on_url_change(uri)
-                  |> dispatch
-                })
-              Error(_) -> effect.none()
-            }
-          _ -> effect.none()
-        })
+        Ok(auth_user) -> #(
+          Model(..model, auth_user: Some(auth_user)),
+          case get_route() {
+            CreatePost ->
+              case uri.parse("/create-post") {
+                Ok(uri) ->
+                  effect.from(fn(dispatch) {
+                    on_url_change(uri)
+                    |> dispatch
+                  })
+                Error(_) -> effect.none()
+              }
+            _ -> effect.none()
+          },
+        )
         Error(_) -> #(model, effect.none())
       }
     PostsRecieved(get_posts_result) ->
@@ -541,16 +537,21 @@ fn get_post_id() -> String {
 
 pub fn get_inviter(auth_code: String) -> Effect(Msg) {
   let url = env.get_api_url() <> "/api/auth-code/" <> auth_code
-  let decoder =
-    dynamic.decode1(UsernameResponse, dynamic.field("username", dynamic.string))
+
+  let decoder = {
+    use username <- decode.field("username", decode.string)
+    decode.success(UsernameResponse(username:))
+  }
 
   lustre_http.get(url, lustre_http.expect_json(decoder, InviterRecieved))
 }
 
 pub fn get_change_password_target(token: String) -> Effect(Msg) {
   let url = env.get_api_url() <> "/api/auth/forgot-password/" <> token
-  let decoder =
-    dynamic.decode1(UsernameResponse, dynamic.field("username", dynamic.string))
+  let decoder = {
+    use username <- decode.field("username", decode.string)
+    decode.success(UsernameResponse(username:))
+  }
 
   lustre_http.get(
     url,
@@ -561,13 +562,12 @@ pub fn get_change_password_target(token: String) -> Effect(Msg) {
 pub fn get_auth_user() -> Effect(Msg) {
   let url = env.get_api_url() <> "/api/auth/validate"
 
-  let decoder =
-    dynamic.decode3(
-      AuthUser,
-      dynamic.field("user_id", dynamic.int),
-      dynamic.field("username", dynamic.string),
-      dynamic.field("is_admin", dynamic.bool),
-    )
+  let decoder = {
+    use user_id <- decode.field("user_id", decode.int)
+    use username <- decode.field("username", decode.string)
+    use is_admin <- decode.field("is_admin", decode.bool)
+    decode.success(AuthUser(user_id:, username:, is_admin:))
+  }
 
   lustre_http.get(url, lustre_http.expect_json(decoder, AuthUserRecieved))
 }
@@ -577,144 +577,108 @@ pub fn get_show_post() -> Effect(Msg) {
 
   lustre_http.get(
     url,
-    lustre_http.expect_json(
-      fn(data) { decode.from(post_decoder(), data) },
-      ShowPostRecieved,
-    ),
+    lustre_http.expect_json(post_decoder(), ShowPostRecieved),
   )
 }
 
 pub fn post_decoder() {
-  decode.into({
-    use id <- decode.parameter
-    use title <- decode.parameter
-    use href <- decode.parameter
-    use body <- decode.parameter
-    use likes <- decode.parameter
-    use user_like_post <- decode.parameter
-    use comments_count <- decode.parameter
-    use comments <- decode.parameter
-    use tags <- decode.parameter
-    use username <- decode.parameter
-    use original_creator <- decode.parameter
-    use created_at <- decode.parameter
-
-    Post(
-      id,
-      title,
-      href,
-      body,
-      likes,
-      user_like_post,
-      comments_count,
-      comments,
-      tags,
-      username,
-      original_creator,
-      created_at,
-    )
-  })
-  |> decode.field("id", decode.int)
-  |> decode.field("title", decode.string)
-  |> decode.field("href", decode.optional(decode.string))
-  |> decode.field("body", decode.optional(decode.string))
-  |> decode.field("likes", decode.int)
-  |> decode.field("user_like_post", decode.bool)
-  |> decode.field("comments_count", decode.int)
-  |> decode.field("comments", decode.list(comment_decoder()))
-  |> decode.field("tags", decode.list(decode.string))
-  |> decode.field("username", decode.string)
-  |> decode.field("original_creator", decode.bool)
-  |> decode.field("created_at", decode.int)
+  use id <- decode.field("id", decode.int)
+  use title <- decode.field("title", decode.string)
+  use href <- decode.optional_field(
+    "href",
+    option.None,
+    decode.optional(decode.string),
+  )
+  use body <- decode.optional_field(
+    "body",
+    option.None,
+    decode.optional(decode.string),
+  )
+  use likes <- decode.field("likes", decode.int)
+  use user_like_post <- decode.field("user_like_post", decode.bool)
+  use comments_count <- decode.field("comments_count", decode.int)
+  use comments <- decode.field("comments", decode.list(comment_decoder()))
+  use tags <- decode.field("tags", decode.list(decode.string))
+  use username <- decode.field("username", decode.string)
+  use original_creator <- decode.field("original_creator", decode.bool)
+  use created_at <- decode.field("created_at", decode.int)
+  decode.success(Post(
+    id:,
+    title:,
+    href:,
+    body:,
+    likes:,
+    user_like_post:,
+    comments_count:,
+    comments:,
+    tags:,
+    username:,
+    original_creator:,
+    created_at:,
+  ))
 }
 
 fn comment_decoder() {
-  decode.into({
-    use id <- decode.parameter
-    use body <- decode.parameter
-    use username <- decode.parameter
-    use likes <- decode.parameter
-    use user_like_post_comment <- decode.parameter
-    use parent_id <- decode.parameter
-    use created_at <- decode.parameter
+  use id <- decode.field("id", decode.int)
+  use body <- decode.field("body", decode.string)
+  use username <- decode.field("username", decode.string)
+  use likes <- decode.field("likes", decode.int)
+  use user_like_post_comment <- decode.field(
+    "user_like_post_comment",
+    decode.bool,
+  )
+  use parent_id <- decode.optional_field(
+    "parent_id",
+    option.None,
+    decode.optional(decode.int),
+  )
+  use created_at <- decode.field("created_at", decode.int)
 
-    PostComment(
-      id,
-      body,
-      username,
-      likes,
-      user_like_post_comment,
-      parent_id,
-      created_at,
-    )
-  })
-  |> decode.field("id", decode.int)
-  |> decode.field("body", decode.string)
-  |> decode.field("username", decode.string)
-  |> decode.field("likes", decode.int)
-  |> decode.field("user_like_post_comment", decode.bool)
-  |> decode.field("parent_id", decode.optional(decode.int))
-  |> decode.field("created_at", decode.int)
+  decode.success(PostComment(
+    id:,
+    body:,
+    username:,
+    likes:,
+    user_like_post_comment:,
+    parent_id:,
+    created_at:,
+  ))
 }
 
 pub fn get_posts() -> Effect(Msg) {
   let url = env.get_api_url() <> "/api/posts"
 
-  let response_decoder =
-    decode.into({
-      use posts <- decode.parameter
+  let decoder = {
+    use posts <- decode.field("posts", decode.list(post_decoder()))
+    decode.success(GetPostsResponse(posts))
+  }
 
-      GetPostsResponse(posts)
-    })
-    |> decode.field("posts", decode.list(post_decoder()))
-
-  lustre_http.get(
-    url,
-    lustre_http.expect_json(
-      fn(data) { response_decoder |> decode.from(data) },
-      PostsRecieved,
-    ),
-  )
+  lustre_http.get(url, lustre_http.expect_json(decoder, PostsRecieved))
 }
 
 pub fn tag_decoder() {
-  decode.into({
-    use id <- decode.parameter
-    use name <- decode.parameter
-    use category <- decode.parameter
-    use permission <- decode.parameter
-
-    Tag(
-      id,
-      name,
-      category: shared.string_to_tag_category(category),
-      permission: shared.string_to_tag_permission(permission),
-    )
-  })
-  |> decode.field("id", decode.int)
-  |> decode.field("name", decode.string)
-  |> decode.field("category", decode.string)
-  |> decode.field("permission", decode.string)
+  use id <- decode.field("id", decode.int)
+  use name <- decode.field("name", decode.string)
+  use category <- decode.field("category", decode.string)
+  use permission <- decode.field("permission", decode.string)
+  decode.success(Tag(
+    id,
+    name,
+    category: shared.string_to_tag_category(category),
+    permission: shared.string_to_tag_permission(permission),
+  ))
 }
 
 pub fn get_tags() -> Effect(Msg) {
   let url = env.get_api_url() <> "/api/tags"
 
-  let response_decoder =
-    decode.into({
-      use tags <- decode.parameter
+  let response_decoder = {
+    use tags <- decode.field("tags", decode.list(tag_decoder()))
 
-      GetTagsResponse(tags)
-    })
-    |> decode.field("tags", decode.list(tag_decoder()))
+    decode.success(GetTagsResponse(tags))
+  }
 
-  lustre_http.get(
-    url,
-    lustre_http.expect_json(
-      fn(data) { response_decoder |> decode.from(data) },
-      TagsRecieved,
-    ),
-  )
+  lustre_http.get(url, lustre_http.expect_json(response_decoder, TagsRecieved))
 }
 
 fn signup(model: Model) {
@@ -784,8 +748,6 @@ fn create_comment(model: Model) {
 }
 
 pub fn view(model: Model) -> Element(Msg) {
-  use <- hermodr.initialize()
-
   body([id("app")], [
     div(
       [

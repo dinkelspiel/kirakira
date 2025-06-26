@@ -7,8 +7,8 @@ import gleam/result
 import server/db
 import server/db/post_comment
 import server/db/user_like
+import server/sql
 import shared.{type Post, Post}
-import squirrels/sql
 import wisp.{type Request}
 
 pub type ListPostsDBRow {
@@ -26,8 +26,8 @@ pub type ListPostsDBRow {
 }
 
 pub fn get_tags_for_post(post_id: Int) {
-  use db_connection <- db.get_connection()
-  case sql.get_tags_by_post_id(db_connection, post_id) {
+  use db <- db.get_connection()
+  case sql.get_tags_by_post_id(post_id) |> db.query(db, _) {
     Ok(returned) ->
       Ok(
         list.map(returned.rows, fn(a) {
@@ -68,9 +68,8 @@ pub fn post_rows_to_post(
         True ->
           case post_comment.get_post_comments(req, row.post_id) {
             Ok(comments) -> comments
-            Error(err) -> {
-              io.debug(err)
-              panic as "fuck"
+            Error(_) -> {
+              panic as "Couldn't get post comments"
             }
           }
         False -> []
@@ -108,10 +107,11 @@ pub fn post_to_json(post: Post) -> Json {
 }
 
 pub fn get_posts(req: Request) -> Result(List(Post), String) {
-  use db_connection <- db.get_connection()
+  use db <- db.get_connection()
 
   use post_rows <- result.try(
-    sql.get_posts(db_connection)
+    sql.get_posts()
+    |> db.query(db, _)
     |> result.replace_error("Problem getting posts from database"),
   )
 
@@ -127,10 +127,10 @@ pub fn get_posts(req: Request) -> Result(List(Post), String) {
           Some(a) -> a
           None -> panic
         },
-        post_original_creator: row.original_creator,
+        post_original_creator: row.original_creator == 1,
         like_count: row.like_count,
         comment_count: row.comment_count,
-        created_at: row.created_at |> float.round,
+        created_at: row.created_at,
       )
     }),
     False,
@@ -138,10 +138,11 @@ pub fn get_posts(req: Request) -> Result(List(Post), String) {
 }
 
 pub fn get_post_by_id(req: Request, post_id: Int) -> Result(Post, String) {
-  use db_connection <- db.get_connection()
+  use db <- db.get_connection()
 
   use post_rows <- result.try(
-    sql.get_post_by_id(db_connection, post_id)
+    sql.get_post_by_id(post_id)
+    |> db.query(db, _)
     |> result.replace_error("Problem getting post by id from database"),
   )
 
@@ -157,10 +158,10 @@ pub fn get_post_by_id(req: Request, post_id: Int) -> Result(Post, String) {
           Some(a) -> a
           None -> panic
         },
-        post_original_creator: row.original_creator,
+        post_original_creator: row.original_creator == 1,
         like_count: row.like_count,
         comment_count: row.comment_count,
-        created_at: row.created_at |> float.round,
+        created_at: row.created_at,
       )
     }),
     False,
@@ -173,10 +174,11 @@ pub fn get_latest_post_by_user(
   req: Request,
   user_id: Int,
 ) -> Result(Post, String) {
-  use db_connection <- db.get_connection()
+  use db <- db.get_connection()
 
   use post_rows <- result.try(
-    sql.get_latest_post_by_user_id(db_connection, user_id)
+    sql.get_latest_post_by_user_id(user_id)
+    |> db.query(db, _)
     |> result.replace_error("Failed gettings posts to database in latest_posts"),
   )
 
@@ -192,10 +194,10 @@ pub fn get_latest_post_by_user(
           Some(a) -> a
           None -> panic
         },
-        post_original_creator: row.original_creator,
+        post_original_creator: row.original_creator == 1,
         like_count: row.like_count,
         comment_count: row.comment_count,
-        created_at: row.created_at |> float.round,
+        created_at: row.created_at,
       )
     }),
     False,

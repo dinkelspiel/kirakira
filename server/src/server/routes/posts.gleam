@@ -1,5 +1,6 @@
 import gleam/bool
 import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/http.{Get, Post}
 import gleam/json
 import gleam/list
@@ -13,8 +14,8 @@ import server/db/tag
 import server/db/user
 import server/db/user_session
 import server/response
+import server/sql
 import shared.{Admin}
-import squirrels/sql
 import wisp.{type Request, type Response}
 
 pub fn posts(req: Request) -> Response {
@@ -58,18 +59,26 @@ type CreatePost {
 
 fn decode_create_post(
   json: dynamic.Dynamic,
-) -> Result(CreatePost, dynamic.DecodeErrors) {
-  let decoder =
-    dynamic.decode5(
-      CreatePost,
-      dynamic.field("title", dynamic.string),
-      dynamic.optional_field("href", dynamic.string),
-      dynamic.optional_field("body", dynamic.string),
-      dynamic.field("original_creator", dynamic.bool),
-      dynamic.field("tags", dynamic.list(dynamic.int)),
+) -> Result(CreatePost, List(decode.DecodeError)) {
+  let decoder = {
+    use title <- decode.field("title", decode.string)
+    use href <- decode.optional_field(
+      "href",
+      option.None,
+      decode.optional(decode.string),
     )
+    use body <- decode.optional_field(
+      "body",
+      option.None,
+      decode.optional(decode.string),
+    )
+    use original_creator <- decode.field("original_creator", decode.bool)
+    use tags <- decode.field("tags", decode.list(decode.int))
 
-  decoder(json)
+    decode.success(CreatePost(title:, href:, body:, original_creator:, tags:))
+  }
+
+  decode.run(json, decoder)
 }
 
 fn does_post_with_href_exist(post: CreatePost) {
@@ -82,10 +91,10 @@ fn does_post_with_href_exist(post: CreatePost) {
   )
 
   case db.get_connection_raw() {
-    Ok(db_connection) ->
+    Ok(db) ->
       case post.href {
         Some(href) ->
-          case sql.get_post_by_href(db_connection, href) {
+          case sql.get_post_by_href(href) |> db.query(db, _) {
             Ok(posts) -> !list.is_empty(posts.rows)
             Error(_) -> False
           }
@@ -96,27 +105,33 @@ fn does_post_with_href_exist(post: CreatePost) {
 }
 
 fn insert_post_to_db(req: Request, post: CreatePost, user_id: Int) {
-  use db_connection <- db.get_connection()
+  use db <- db.get_connection()
 
   let _ = case post.href {
     Some(href) ->
       sql.create_post_with_href(
-        db_connection,
         post.title,
         href,
         user_id,
-        post.original_creator,
+        case post.original_creator {
+          True -> 1
+          False -> 0
+        },
       )
+      |> db.exec(db, _)
     None ->
       case post.body {
         Some(body) ->
           sql.create_post_with_body(
-            db_connection,
             post.title,
             body,
             user_id,
-            post.original_creator,
+            case post.original_creator {
+              True -> 1
+              False -> 0
+            },
           )
+          |> db.exec(db, _)
         None -> panic as "Unreachable state because of guard"
       }
   }

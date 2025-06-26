@@ -1,4 +1,5 @@
 import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/option.{type Option}
 import lustre_http
 import shared.{type Post, type Tag}
@@ -142,11 +143,18 @@ pub type GetTagsResponse {
 }
 
 pub fn message_error_decoder() {
-  dynamic.decode2(
-    MessageErrorResponse,
-    dynamic.optional_field("message", dynamic.string),
-    dynamic.optional_field("error", dynamic.string),
+  use message <- decode.optional_field(
+    "message",
+    option.None,
+    decode.optional(decode.string),
   )
+  use error <- decode.optional_field(
+    "error",
+    option.None,
+    decode.optional(decode.string),
+  )
+
+  decode.success(MessageErrorResponse(message:, error:))
 }
 
 pub type AuthUser {

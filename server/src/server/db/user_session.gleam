@@ -2,7 +2,8 @@ import gleam/list
 import gleam/result
 import server/db
 import server/generatetoken.{generate_token}
-import squirrels/sql
+import server/sql
+import shork
 import wisp.{type Request}
 
 pub fn get_user_id_from_session(req: Request) {
@@ -11,12 +12,12 @@ pub fn get_user_id_from_session(req: Request) {
     |> result.replace_error("No session cookie found"),
   )
 
-  use db_connection <- db.get_connection()
+  use db <- db.get_connection()
 
   let session_token = case
-    sql.get_user_id_from_session(db_connection, session_token)
+    sql.get_user_id_from_session(session_token) |> db.query(db, _)
   {
-    Ok(users) -> Ok(list.first(users.rows))
+    Ok(shork.Returned(_, row)) -> Ok(list.first(row))
     Error(_) -> Error("Problem getting user_session by token")
   }
 
@@ -31,9 +32,9 @@ pub fn get_user_id_from_session(req: Request) {
 pub fn create_user_session(user_id: Int) {
   let token = generate_token(64)
 
-  use db_connection <- db.get_connection()
+  use db <- db.get_connection()
 
-  case sql.create_user_session(db_connection, user_id, token) {
+  case sql.create_user_session(user_id, token) |> db.exec(db, _) {
     Ok(_) -> Ok(token)
     Error(_) -> Error("Creating user session")
   }

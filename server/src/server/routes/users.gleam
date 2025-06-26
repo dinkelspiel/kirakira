@@ -1,6 +1,7 @@
 import beecrypt
 import gleam/bool
 import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/http.{Get, Post}
 import gleam/json
 import gleam/list
@@ -11,7 +12,7 @@ import server/db
 import server/db/auth_code.{type AuthCode, get_auth_code, mark_auth_code_as_used}
 import server/db/user.{get_user_by_username}
 import server/db/user_session.{create_user_session}
-import squirrels/sql
+import server/sql
 import wisp.{type Request, type Response}
 
 pub fn users(req: Request) -> Response {
@@ -34,16 +35,16 @@ type CreateUser {
 
 fn decode_create_user(
   json: dynamic.Dynamic,
-) -> Result(CreateUser, dynamic.DecodeErrors) {
-  let decoder =
-    dynamic.decode4(
-      CreateUser,
-      dynamic.field("username", dynamic.string),
-      dynamic.field("email", dynamic.string),
-      dynamic.field("password", dynamic.string),
-      dynamic.field("auth_code", dynamic.string),
-    )
-  case decoder(json) {
+) -> Result(CreateUser, List(decode.DecodeError)) {
+  let decoder = {
+    use username <- decode.field("username", decode.string)
+    use email <- decode.field("email", decode.string)
+    use password <- decode.field("password", decode.string)
+    use auth_code <- decode.field("auth_code", decode.string)
+
+    decode.success(CreateUser(username:, email:, password:, auth_code:))
+  }
+  case decode.run(json, decoder) {
     Ok(create_user) ->
       Ok(CreateUser(
         username: string.lowercase(create_user.username),
@@ -56,14 +57,11 @@ fn decode_create_user(
 }
 
 fn does_user_with_same_email_or_username_exist(create_user: CreateUser) {
-  use db_connection <- db.get_connection()
+  use db <- db.get_connection()
 
   use result <- result.try(
-    sql.get_user_by_email_or_username(
-      db_connection,
-      create_user.email,
-      create_user.username,
-    )
+    sql.get_user_by_email_or_username(create_user.email, create_user.username)
+    |> db.query(db, _)
     |> result.replace_error("User by email or username db call failed"),
   )
 
@@ -71,15 +69,15 @@ fn does_user_with_same_email_or_username_exist(create_user: CreateUser) {
 }
 
 fn insert_user_to_db(create_user: CreateUser, auth_code: AuthCode) {
-  use db_connection <- db.get_connection()
+  use db <- db.get_connection()
 
   sql.create_user(
-    db_connection,
     create_user.username,
     create_user.email,
     create_user.password,
     auth_code.user_id,
   )
+  |> db.exec(db, _)
   |> result.replace_error("Error inserting user to db")
 }
 

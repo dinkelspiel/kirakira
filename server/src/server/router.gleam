@@ -172,6 +172,6 @@ fn page_routes(req: Request, route_segments: List(String)) -> Response {
   |> wisp.html_body(
     client.view(model)
     |> page_scaffold()
-    |> element.to_document_string_builder(),
+    |> element.to_document_string_tree(),
   )
 }

@@ -3,7 +3,7 @@ import gleam/result
 import server/db
 import server/db/user
 import server/generatetoken
-import squirrels/sql
+import server/sql
 
 /// Returns the forgot password token
 pub fn create_forgot_password(email: String) {
@@ -11,9 +11,9 @@ pub fn create_forgot_password(email: String) {
 
   let token = generatetoken.generate_token(64)
 
-  use db_connection <- db.get_connection()
+  use db <- db.get_connection()
 
-  let result = sql.create_forgot_password(db_connection, user.id, token)
+  let result = sql.create_forgot_password(user.id, token) |> db.exec(db, _)
 
   case result {
     Ok(_) -> Ok(token)
@@ -22,9 +22,10 @@ pub fn create_forgot_password(email: String) {
 }
 
 pub fn get_user_by_forgot_password(token: String) {
-  use db_connection <- db.get_connection()
+  use db <- db.get_connection()
 
-  let forgot_passwords = sql.get_user_by_forgot_password(db_connection, token)
+  let forgot_passwords =
+    sql.get_user_by_forgot_password(token) |> db.query(db, _)
 
   case forgot_passwords {
     Ok(forgot_passwords) ->
@@ -38,9 +39,10 @@ pub fn get_user_by_forgot_password(token: String) {
 
 // Takes in token
 pub fn mark_forgot_password_as_used(token: String) {
-  use db_connection <- db.get_connection()
+  use db <- db.get_connection()
 
-  sql.update_forgot_password_as_used(db_connection, token)
+  sql.update_forgot_password_as_used(token)
+  |> db.exec(db, _)
   |> result.replace(Nil)
   |> result.replace_error("Problem with marking forgot password as used")
 }

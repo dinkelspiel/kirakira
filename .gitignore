@@ -5,3 +5,5 @@
 erl_crash.dump
 */priv
 /client/src/env.gleam
+.env
+./server/sqlc

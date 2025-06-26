@@ -1,6 +1,7 @@
 import beecrypt
 import gleam/bool
 import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/http.{Post}
 import gleam/json
 import gleam/result
@@ -24,14 +25,15 @@ type Login {
 
 fn decode_create_user(
   json: dynamic.Dynamic,
-) -> Result(Login, dynamic.DecodeErrors) {
-  let decoder =
-    dynamic.decode2(
-      Login,
-      dynamic.field("email_username", dynamic.string),
-      dynamic.field("password", dynamic.string),
-    )
-  case decoder(json) {
+) -> Result(Login, List(decode.DecodeError)) {
+  let decoder = {
+    use email_username <- decode.field("email_username", decode.string)
+    use password <- decode.field("password", decode.string)
+
+    decode.success(Login(email_username:, password:))
+  }
+
+  case decode.run(json, decoder) {
     Ok(login) ->
       Ok(Login(
         email_username: string.lowercase(login.email_username),

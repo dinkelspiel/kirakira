@@ -20,7 +20,7 @@ import lustre/event
 import shared.{type PostComment}
 
 fn create_comment_view(model: Model) {
-  form([class("grid gap-2"), event.on_submit(RequestCreateComment)], [
+  form([class("grid gap-2"), event.on_submit(fn(_) { RequestCreateComment })], [
     textarea(
       [
         input_class(),

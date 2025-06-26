@@ -3,11 +3,11 @@ import gleam/json.{type Json}
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
-import pog
 import server/db
 import server/db/user_like
+import server/sql
 import shared.{type PostComment, PostComment}
-import squirrels/sql
+import shork
 import wisp.{type Request}
 
 pub type PostCommentDBRow {
@@ -83,10 +83,11 @@ pub type PostCommentDBRow {
 // }
 
 pub fn get_post_comments(req: Request, post_id: Int) {
-  use db_connection <- db.get_connection()
+  use db <- db.get_connection()
 
-  use pog.Returned(_, rows) <- result.try(
-    sql.get_post_comments_by_post_id(db_connection, post_id)
+  use shork.Returned(_, rows) <- result.try(
+    sql.get_post_comments_by_post_id(post_id)
+    |> db.query(db, _)
     |> result.replace_error("Database query error"),
   )
 
@@ -102,7 +103,7 @@ pub fn get_post_comments(req: Request, post_id: Int) {
         },
         like_count: row.like_count,
         post_comment_parent_id: row.parent_id,
-        post_comment_created_at: row.created_at |> float.round,
+        post_comment_created_at: row.created_at,
       )
     }),
   ))
@@ -161,10 +162,11 @@ pub fn get_post_comment_by_id(
   req: Request,
   post_comment_id: Int,
 ) -> Result(PostComment, String) {
-  use db_connection <- db.get_connection()
+  use db <- db.get_connection()
 
-  use pog.Returned(_, rows) <- result.try(
-    sql.get_post_comments_by_id(db_connection, post_comment_id)
+  use shork.Returned(_, rows) <- result.try(
+    sql.get_post_comments_by_id(post_comment_id)
+    |> db.query(db, _)
     |> result.replace_error("Problem getting post_comment by id from database"),
   )
 
@@ -180,7 +182,7 @@ pub fn get_post_comment_by_id(
         },
         like_count: row.like_count,
         post_comment_parent_id: row.parent_id,
-        post_comment_created_at: row.created_at |> float.round,
+        post_comment_created_at: row.created_at,
       )
     }),
   )

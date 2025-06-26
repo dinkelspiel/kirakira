@@ -1,5 +1,6 @@
 import gleam/bool
 import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/http.{Post}
 import gleam/json
 import gleam/list
@@ -8,7 +9,7 @@ import gleam/result
 import server/db
 import server/db/user_session
 import server/response
-import squirrels/sql
+import server/sql
 import wisp.{type Request, type Response}
 
 pub fn comment(req: Request, post_id: Int) -> Response {
@@ -24,24 +25,28 @@ type CreateComment {
 
 fn decode_create_comment(
   json: dynamic.Dynamic,
-) -> Result(CreateComment, dynamic.DecodeErrors) {
-  let decoder =
-    dynamic.decode2(
-      CreateComment,
-      dynamic.field("body", dynamic.string),
-      dynamic.optional_field("parent_id", dynamic.int),
+) -> Result(CreateComment, List(decode.DecodeError)) {
+  let decoder = {
+    use body <- decode.field("body", decode.string)
+    use parent_id <- decode.optional_field(
+      "parent_id",
+      option.None,
+      decode.optional(decode.int),
     )
+    decode.success(CreateComment(body:, parent_id:))
+  }
 
-  decoder(json)
+  decode.run(json, decoder)
 }
 
 fn does_parent_exist_in_post(comment: CreateComment, post_id: Int) {
-  use db_connection <- db.get_connection()
+  use db <- db.get_connection()
 
   case comment.parent_id {
     Some(parent_id) ->
       case
-        sql.get_post_comment_parent_in_post(db_connection, post_id, parent_id)
+        sql.get_post_comment_parent_in_post(post_id, parent_id)
+        |> db.query(db, _)
       {
         Ok(comments) -> Ok(!list.is_empty(comments.rows))
         Error(_) -> Error("Problem selecting comments in post with parent_id")
@@ -52,25 +57,16 @@ fn does_parent_exist_in_post(comment: CreateComment, post_id: Int) {
 }
 
 fn insert_comment_to_db(comment: CreateComment, user_id: Int, post_id: Int) {
-  use db_connection <- db.get_connection()
+  use db <- db.get_connection()
 
   case comment.parent_id {
     Some(parent_id) ->
-      sql.create_post_comment(
-        db_connection,
-        comment.body,
-        user_id,
-        post_id,
-        parent_id,
-      )
+      sql.create_post_comment(comment.body, user_id, post_id, parent_id)
+      |> db.exec(db, _)
       |> result.replace_error("Problem inserting post to database")
     None ->
-      sql.create_post_comment_no_parent(
-        db_connection,
-        comment.body,
-        user_id,
-        post_id,
-      )
+      sql.create_post_comment_no_parent(comment.body, user_id, post_id)
+      |> db.exec(db, _)
       |> result.replace_error("Problem inserting post to database")
   }
 }
@@ -103,12 +99,12 @@ pub fn create_comment(req: Request, post_id: Int) -> Response {
       ),
     )
 
-    use _ <- result.try(case
-      insert_comment_to_db(comment, auth_user_id, post_id)
-    {
-      Ok(_) -> Ok(Nil)
-      Error(_) -> Error("Problem creating comment")
-    })
+    use _ <- result.try(
+      case insert_comment_to_db(comment, auth_user_id, post_id) {
+        Ok(_) -> Ok(Nil)
+        Error(_) -> Error("Problem creating comment")
+      },
+    )
 
     Ok(
       json.object([#("message", json.string("Created comment"))])

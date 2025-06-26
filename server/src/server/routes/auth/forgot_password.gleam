@@ -1,4 +1,5 @@
 import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/http.{Get, Post}
 import gleam/httpc
 import gleam/json
@@ -24,13 +25,13 @@ type CreateForgotPassword {
 
 fn decode_create_forgot_password(
   json: dynamic.Dynamic,
-) -> Result(CreateForgotPassword, dynamic.DecodeErrors) {
-  let decoder =
-    dynamic.decode1(
-      CreateForgotPassword,
-      dynamic.field("email", dynamic.string),
-    )
-  decoder(json)
+) -> Result(CreateForgotPassword, List(decode.DecodeError)) {
+  let decoder = {
+    use email <- decode.field("email", decode.string)
+
+    decode.success(CreateForgotPassword(email:))
+  }
+  decode.run(json, decoder)
 }
 
 fn create_forgot_password(req: Request) {

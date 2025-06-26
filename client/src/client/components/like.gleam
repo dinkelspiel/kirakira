@@ -21,7 +21,7 @@ pub fn like_button_view(user_likes: Bool, likes: Int, msg: Msg, classes: String)
     [
       div(
         [
-          attribute.style([
+          attribute.styles([
             #("width", "0"),
             #("height", "0"),
             #("border-left", "5px solid transparent"),

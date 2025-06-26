@@ -1,8 +1,9 @@
+import beecrypt
 import gleam/list
 import gleam/option.{type Option}
 import gleam/result
 import server/db
-import squirrels/sql
+import server/sql
 
 pub type User {
   User(
@@ -15,10 +16,11 @@ pub type User {
 }
 
 pub fn get_user_by_username(username: String) -> Result(User, String) {
-  use db_connection <- db.get_connection()
+  use db <- db.get_connection()
 
   use returned <- result.try(
-    sql.get_user_by_username(db_connection, username)
+    sql.get_user_by_username(username)
+    |> db.query(db, _)
     |> result.replace_error("Problem getting user by username"),
   )
 
@@ -36,10 +38,11 @@ pub fn get_user_by_username(username: String) -> Result(User, String) {
 }
 
 pub fn get_user_by_email(email: String) -> Result(User, String) {
-  use db_connection <- db.get_connection()
+  use db <- db.get_connection()
 
   use returned <- result.try(
-    sql.get_user_by_email(db_connection, email)
+    sql.get_user_by_email(email)
+    |> db.query(db, _)
     |> result.replace_error("Problem getting user by email"),
   )
 
@@ -57,10 +60,11 @@ pub fn get_user_by_email(email: String) -> Result(User, String) {
 }
 
 pub fn get_user_by_id(user_id: Int) -> Result(User, String) {
-  use db_connection <- db.get_connection()
+  use db <- db.get_connection()
 
   use returned <- result.try(
-    sql.get_user_by_id(db_connection, user_id)
+    sql.get_user_by_id(user_id)
+    |> db.query(db, _)
     |> result.replace_error("Problem getting user by id"),
   )
 
@@ -79,8 +83,8 @@ pub fn get_user_by_id(user_id: Int) -> Result(User, String) {
 
 pub fn is_user_admin(user_id: Int) -> Bool {
   case db.get_connection_raw() {
-    Ok(db_connection) ->
-      case sql.get_user_is_admin(db_connection, user_id) {
+    Ok(db) ->
+      case sql.get_user_is_admin(user_id) |> db.query(db, _) {
         Ok(returned) ->
           case list.first(returned.rows) {
             Ok(_) -> True
@@ -94,9 +98,10 @@ pub fn is_user_admin(user_id: Int) -> Bool {
 
 /// Takes plain text password
 pub fn set_password_for_user(user_id: Int, password: String) {
-  use db_connection <- db.get_connection()
+  use db <- db.get_connection()
 
-  sql.update_user_password(db_connection, user_id, password)
+  sql.update_user_password(beecrypt.hash(password), user_id)
+  |> db.exec(db, _)
   |> result.replace(Nil)
   |> result.replace_error("Problem with updating user password")
 }
