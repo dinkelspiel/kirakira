@@ -14,7 +14,7 @@ import shared.{type Post}
 pub fn entry_view(post: Post) {
   li(
     [
-      class("grid grid-cols-[18px,1fr] gap-2"),
+      class("grid grid-cols-[18px_1fr] gap-2"),
       attribute.id("post-" <> int.to_string(post.id)),
     ],
     [
