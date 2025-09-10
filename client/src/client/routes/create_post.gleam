@@ -35,7 +35,7 @@ pub fn create_post_view(model: Model) {
             div(
               [
                 class(
-                  "grid sm:grid-cols-[170px,1fr] items-center sm:justify-start gap-2 w-full",
+                  "grid sm:grid-cols-[170px_1fr] items-center sm:justify-start gap-2 w-full",
                 ),
               ],
               [
